@@ -1,0 +1,9 @@
+[submodule "third_party/llama.cpp"]
+	path = third_party/llama.cpp
+	url = https://github.com/ggerganov/llama.cpp.git
+    # Pin to a specific commit for reproducible builds.
+    # Update deliberately after testing provider compatibility.
+    # (gguf-v0.18.0+73). The workers use the llama_vocab-based API
+    # (llama_tokenize, llama_token_to_piece, vocab-is-eog,
+    # llama_model_load_from_file, llama_init_from_model, etc.).
+    shallow = false

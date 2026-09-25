@@ -1,0 +1,48 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+#
+# Path -> label rules for actions/labeler. Applied to PRs by the labeler
+# workflow. The labels must exist (see labels.yml + the labels sync workflow).
+
+"area: backend":
+  - changed-files:
+      - any-glob-to-any-file: ["backend/**"]
+
+"area: frontend-qml":
+  - changed-files:
+      - any-glob-to-any-file: ["frontend/**"]
+
+"area: wire-remote":
+  - changed-files:
+      - any-glob-to-any-file: ["backend/remote/**"]
+
+"area: skills":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "backend/tools/skills/**"
+          - "backend/services/skill-service.*"
+
+"area: canvas":
+  - changed-files:
+      - any-glob-to-any-file: ["backend/services/canvas-*"]
+
+"area: providers":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "backend/api/**"
+          - "backend/services/*provider*"
+
+"area: build-ci":
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+          - ".gitea/**"
+          - "CMakeLists.txt"
+          - "CMakePresets.json"
+          - "packaging/**"
+
+"documentation":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "Documentation/**"
+          - "**/*.md"

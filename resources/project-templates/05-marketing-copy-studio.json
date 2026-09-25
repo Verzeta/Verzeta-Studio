@@ -1,0 +1,18 @@
+{
+  "id": "marketing-copy-studio",
+  "name": "Marketing Copy Studio",
+  "tagLabel": "MARKETING",
+  "category": "marketing",
+  "geometryKind": "triangle",
+  "baseHue": 30,
+  "scenario": "Marketing copy · positioning + landing",
+  "goal": "Draft headline, sub-headline, and three variants of body copy for a new product page. Stress-test each variant against the target audience and pick a winner.",
+  "description": "A writer drafts every variant with a clear voice. A critic flags weak claims, vague benefits, and tone drift. An analyst pulls comparable examples and audience signals so the final choice is grounded, not vibes.",
+  "coordinator": "Product Manager",
+  "members": [
+    { "alias": "Writer", "agentTemplate": "Writer" },
+    { "alias": "Critic", "agentTemplate": "Code Reviewer" },
+    { "alias": "Analyst", "agentTemplate": "Analyst" }
+  ],
+  "seedDocuments": []
+}

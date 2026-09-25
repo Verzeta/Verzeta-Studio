@@ -1,0 +1,60 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "debug",
+      "binaryDir": "build-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "VERZETA_BUILD_TESTS": "ON",
+        "VERZETA_ENABLE_LLAMACPP": "OFF"
+      }
+    },
+    {
+      "name": "release",
+      "binaryDir": "build-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "VERZETA_BUILD_TESTS": "OFF",
+        "VERZETA_ENABLE_LLAMACPP": "ON"
+      }
+    },
+    {
+      "name": "ci",
+      "binaryDir": "build-ci",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_CXX_FLAGS": "-Wall -Wextra -Werror",
+        "VERZETA_BUILD_TESTS": "ON",
+        "VERZETA_ENABLE_LLAMACPP": "OFF"
+      }
+    },
+    {
+      "name": "windows-native",
+      "binaryDir": "build-windows",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "C:/msys64/ucrt64/bin/gcc.exe",
+        "CMAKE_CXX_COMPILER": "C:/msys64/ucrt64/bin/g++.exe",
+        "CMAKE_PREFIX_PATH": "C:/msys64/ucrt64",
+        "VERZETA_BUILD_TESTS": "OFF",
+        "VERZETA_ENABLE_LLAMACPP": "OFF"
+      }
+    },
+    {
+      "name": "windows-native-localai",
+      "binaryDir": "C:/vzl",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "C:/msys64/ucrt64/bin/gcc.exe",
+        "CMAKE_CXX_COMPILER": "C:/msys64/ucrt64/bin/g++.exe",
+        "CMAKE_PREFIX_PATH": "C:/msys64/ucrt64",
+        "VERZETA_BUILD_TESTS": "OFF",
+        "VERZETA_ENABLE_LLAMACPP": "ON",
+        "VERZETA_LLAMA_BACKEND": "vulkan"
+      }
+    }
+  ]
+}

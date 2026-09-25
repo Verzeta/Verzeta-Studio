@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+# Blank issues are disabled: every issue must go through a template so the
+# required troubleshooting/debug fields cannot be skipped.
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability (do NOT open a public issue)
+    url: https://github.com/Verzeta/Verzeta-Studio/blob/main/SECURITY.md
+    about: >-
+      Security issues must be disclosed privately. Follow SECURITY.md: never
+      file a vulnerability in the public tracker.
+  - name: Question or usage help
+    url: https://github.com/Verzeta/Verzeta-Studio/discussions
+    about: >-
+      Ask usage questions in Discussions. The issue tracker is for confirmed,
+      reproducible bugs and feature proposals only.
+  - name: Troubleshooting guide (read this BEFORE filing a bug)
+    url: https://github.com/Verzeta/Verzeta-Studio/blob/main/Documentation/User/10-troubleshooting.md
+    about: >-
+      Most "it doesn't work" reports are already answered here. A bug report
+      must show you worked through it and captured a debug log.

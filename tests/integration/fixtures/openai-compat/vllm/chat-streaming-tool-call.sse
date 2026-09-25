@@ -1,0 +1,106 @@
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}],"prompt_token_ids":null,"prompt_text":null}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":"The"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" user"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" is"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" asking"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" about"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" the"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" weather"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" in"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" Paris"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":"."},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" I"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" have"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" a"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" tool"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" called"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" \""},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":"get"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":"_weather"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":"\""},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" that"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" can"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" get"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" the"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" current"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" weather"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" for"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" a"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" location"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":"."},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" I"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" need"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" to"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" use"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" this"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" tool"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" with"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" \""},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":"Paris"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":"\""},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" as"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" the"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" location"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":" parameter"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":"."},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"reasoning":"\n"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"content":"\n\n"},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"tool_calls":[{"id":"call_bebcc3bccbdd4ac6a6cdf639","type":"function","index":0,"function":{"name":"get_weather","arguments":""}}]},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{"}}]},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"location\": \"Paris\""}}]},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"}"}}]},"logprobs":null,"finish_reason":null,"token_ids":null}]}
+
+data: {"id":"chatcmpl-b03334bc3e67dad5","object":"chat.completion.chunk","created":1780133011,"model":"QuantTrio/Qwen3.5-9B-AWQ","choices":[{"index":0,"delta":{"content":""},"logprobs":null,"finish_reason":"tool_calls","stop_reason":null,"token_ids":null}],"system_fingerprint":"vllm-0.22.0-bb79b28e"}
+
+data: [DONE]
+

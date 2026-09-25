@@ -1,0 +1,18 @@
+{
+  "id": "code-review-war-room",
+  "name": "Code Review War Room",
+  "tagLabel": "ENG. REVIEW",
+  "category": "engineering",
+  "geometryKind": "grid",
+  "baseHue": 130,
+  "scenario": "Code review · multi-perspective",
+  "goal": "Review a feature branch end-to-end: correctness, design, security, performance, and test coverage. Deliver a review memo with concrete fix recommendations.",
+  "description": "An engineer reads the diff deeply and identifies bugs. A reviewer applies senior-engineer judgement on architecture and style. A tester runs the code under representative inputs and reports what breaks. The team converges on a single review memo.",
+  "coordinator": "Engineering Manager",
+  "members": [
+    { "alias": "Engineer", "agentTemplate": "Engineer" },
+    { "alias": "Reviewer", "agentTemplate": "Code Reviewer" },
+    { "alias": "Tester", "agentTemplate": "Engineer" }
+  ],
+  "seedDocuments": []
+}

@@ -1,0 +1,18 @@
+{
+  "id": "product-launch-plan",
+  "name": "Product Launch Plan",
+  "tagLabel": "PRODUCT LAUNCH",
+  "category": "marketing",
+  "geometryKind": "arrows",
+  "baseHue": 300,
+  "scenario": "Product launch · multi-channel",
+  "goal": "Ship a coordinated launch: positioning brief, landing page copy, sales one-pager, and a four-email nurture sequence by end of quarter.",
+  "description": "A writer owns the launch narrative across surfaces. A designer makes sure landing-page and email visuals stay coherent. A reviewer enforces consistency, factual accuracy, and a single voice across every asset.",
+  "coordinator": "Product Manager",
+  "members": [
+    { "alias": "Writer", "agentTemplate": "Writer" },
+    { "alias": "Designer", "agentTemplate": "Designer" },
+    { "alias": "QA", "agentTemplate": "Code Reviewer" }
+  ],
+  "seedDocuments": []
+}

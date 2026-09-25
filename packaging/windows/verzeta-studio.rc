@@ -1,0 +1,69 @@
+// SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+// SPDX-License-Identifier: LGPL-3.0-or-later
+//
+// Windows resource script for verzeta-studio.exe.
+//
+// Two resources:
+//   1. IDI_ICON1 -- the application icon embedded into the .exe.
+//      Windows Explorer / taskbar / Alt-Tab / window-corner thumbnail
+//      all read this. Without it, .exe shows the generic blank
+//      executable icon.
+//   2. VERSIONINFO -- the file metadata Windows shows in the Properties
+//      -> Details tab (file description, product name, version,
+//      copyright). Standard for distributable Windows apps.
+//
+// Compiled by MinGW windres at link time when CMake adds this .rc
+// file to the verzeta-studio target's source list (Windows only,
+// gated `if(WIN32)` in backend/CMakeLists.txt).
+//
+// IMPORTANT: a windows .rc file is compiled by windres in cp1252
+// (Windows-1252) by default. KEEP THIS FILE ASCII-ONLY -- em-dashes
+// and other unicode in literal strings will silently corrupt the
+// embedded resource (same trap as the PowerShell scripts).
+
+#include <windows.h>
+
+// -----------------------------------------------------------------------
+// Application icon. ID 1 (IDI_ICON1) is what Windows uses by default for
+// the .exe file icon. Path is relative to this .rc file's directory.
+// -----------------------------------------------------------------------
+1 ICON "../../resources/icons/verzeta-studio.ico"
+
+// -----------------------------------------------------------------------
+// File version + product version metadata. The numeric quad
+// (1,0,0,0) format is required by Windows; the FileVersion /
+// ProductVersion strings can be free-form and match what we use
+// elsewhere ("0.1.0").
+// -----------------------------------------------------------------------
+1 VERSIONINFO
+FILEVERSION     0,1,0,0
+PRODUCTVERSION  0,1,0,0
+FILEFLAGSMASK   0x3fL
+FILEFLAGS       0x0L
+FILEOS          VOS__WINDOWS32
+FILETYPE        VFT_APP
+FILESUBTYPE     0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        // 040904B0 = US English, Unicode (UTF-16). Standard for modern
+        // Windows resources. The strings themselves go through windres
+        // as the file's source encoding (cp1252 unless we say otherwise),
+        // so we keep them ASCII-only above this comment for safety.
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName",      "Verzeta"
+            VALUE "FileDescription",  "Verzeta Studio - Local AI assistant"
+            VALUE "FileVersion",      "0.1.0"
+            VALUE "InternalName",     "verzeta-studio"
+            VALUE "LegalCopyright",   "Copyright (C) 2026 Aditya Mehra. LGPL-3.0-or-later."
+            VALUE "OriginalFilename", "verzeta-studio.exe"
+            VALUE "ProductName",      "Verzeta Studio"
+            VALUE "ProductVersion",   "0.1.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 0x04B0
+    END
+END

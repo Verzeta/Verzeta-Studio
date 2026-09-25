@@ -1,0 +1,17 @@
+[Desktop Entry]
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+Type=Application
+Name=Verzeta Studio
+GenericName=AI Workspace
+Comment=Multi-provider LLM workspace with chat, canvas, RAG, and tool calling
+Exec=verzeta-studio %U
+TryExec=verzeta-studio
+Icon=verzeta-studio
+Terminal=false
+StartupNotify=true
+StartupWMClass=verzeta-studio
+Categories=Office;Development;Utility;Qt;KDE;
+Keywords=AI;LLM;Chat;OpenAI;Anthropic;Gemini;Ollama;Claude;Canvas;RAG;Agent;
+MimeType=text/plain;text/markdown;
+X-GNOME-UsesNotifications=true

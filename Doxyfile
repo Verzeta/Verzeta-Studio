@@ -1,0 +1,91 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+#
+# Doxygen configuration for the Verzeta Studio backend.
+#
+# Run from the repository root:
+#     doxygen && xdg-open doxygen-out/html/index.html
+#
+# OUTPUT_DIRECTORY is a single level and WARN_LOGFILE sits at the repo root
+# on purpose: Doxygen does not create nested output directories, and it
+# opens the warning log BEFORE creating the output directory, so a nested
+# path for either makes a bare `doxygen` fail on a clean checkout.
+#
+# Frontend QML is deliberately NOT an input: Doxygen has no QML parser, so
+# including frontend/ produces noise rather than documentation.
+
+PROJECT_NAME           = "Verzeta Studio"
+PROJECT_NUMBER         = "1.0.0"
+PROJECT_BRIEF          = "Local-first desktop workspace for a team of AI agents"
+
+OUTPUT_DIRECTORY       = doxygen-out
+INPUT                  = backend
+RECURSIVE              = YES
+FILE_PATTERNS          = *.cpp *.h *.hpp
+EXCLUDE                = third_party tests
+EXCLUDE_PATTERNS       = */build*/* */third_party/* *_autogen/* moc_* qrc_* ui_*
+STRIP_FROM_PATH        = .
+
+# ---------------------------------------------------------------------------
+# Project-specific tags.
+#
+# The documentation standard requires @layer and @dependencies on every file
+# header, and @complexity on performance-critical methods; @sideeffects is
+# used widely alongside them. Doxygen knows none of these, so without the
+# aliases below it reported each occurrence as an unknown command and DROPPED
+# the text that followed, which silently removed the architectural-layer and
+# dependency metadata from the generated output on every file. Registering
+# them renders the metadata as its own section and removes ~3300 warnings.
+# ---------------------------------------------------------------------------
+ALIASES                = "layer=@par Architectural layer:^^"
+ALIASES               += "dependencies=@par Dependencies:^^"
+ALIASES               += "sideeffects=@par Side effects:^^"
+ALIASES               += "complexity=@par Complexity:^^"
+
+# Report genuine coverage rather than synthesising entries for undocumented
+# symbols, so the warning log is a usable to-do list.
+EXTRACT_ALL            = NO
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+HIDE_UNDOC_MEMBERS     = NO
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = YES
+WARN_AS_ERROR          = NO
+WARN_LOGFILE           = doxygen-warnings.log
+QUIET                  = YES
+
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+GENERATE_TREEVIEW      = YES
+# No raw source in the generated documentation. The source browser and the
+# verbatim header pages reproduce every file character for character,
+# including INTERNAL-fenced comments, plan references and change logs that
+# the release scrubber removes from the public mirror. Documentation must be
+# built from Doxygen comments alone. The source browser also makes Doxygen
+# report every documented destructor as having undocumented parameters.
+SOURCE_BROWSER         = NO
+VERBATIM_HEADERS       = NO
+ALPHABETICAL_INDEX     = YES
+
+# Qt macros would otherwise confuse the parser.
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+PREDEFINED             = Q_OBJECT= Q_PROPERTY(x)= Q_INVOKABLE= \
+                         Q_SIGNALS:protected: Q_SLOTS:= \
+                         QML_ELEMENT= QML_SINGLETON= QML_NAMED_ELEMENT(x)= \
+                         Q_DISABLE_COPY(x)= Q_DISABLE_COPY_MOVE(x)= Q_GADGET= \
+                         Q_ENUM(x)= Q_FLAG(x)= Q_DECLARE_METATYPE(x)=
+
+HAVE_DOT               = YES
+DOT_IMAGE_FORMAT       = svg
+INTERACTIVE_SVG        = YES
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = YES
+INCLUDE_GRAPH          = YES
+INCLUDED_BY_GRAPH      = NO
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
+# app-controller.cpp and wire-host-bridge.cpp include 63 and 68 headers; at
+# the default limit their include graphs are silently not generated.
+DOT_GRAPH_MAX_NODES    = 80

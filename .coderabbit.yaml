@@ -1,0 +1,98 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+#
+# CodeRabbit configuration for the Verzeta Studio host (C++ / QML / CMake).
+# Tuned to the project's contribution standards so its review complements the
+# requirement gates rather than duplicating them.
+
+language: en-US
+early_access: false
+
+reviews:
+  profile: assertive
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+  # Do not spend review budget on vendored, generated, or build output.
+  path_filters:
+    - "!third_party/**"
+    - "!**/build*/**"
+    - "!**/*.min.*"
+    - "!**/*.lock"
+    - "!**/moc_*"
+    - "!**/qrc_*"
+  path_instructions:
+    - path: "backend/**/*.{cpp,h}"
+      instructions: >-
+        Enforce the project standards. Every file needs the two-line SPDX header
+        and a Doxygen file block (@file, @brief, @layer, @dependencies). Every
+        public class and method needs Doxygen (@brief, @param, @returns, error
+        semantics). Flag any internal, plan-number, dated, or commit-hash context
+        in a comment that is not inside the project's internal comment fence (the
+        fenced block the publish scrubber strips), since it would otherwise leak
+        to the public mirror. Verify correct architectural layer (API / Service / Data /
+        Worker), single responsibility, no duplicated logic, and async/non-blocking
+        work off the main thread. Every behavioural change needs a matching test.
+    - path: "backend/**/*.{cpp,h}"
+      instructions: >-
+        CRITICAL cross-platform rule: any Windows-specific code MUST be inside
+        `#ifdef Q_OS_WIN` (or an equivalent guard) and MUST NOT change Linux/macOS
+        behaviour. If a change touches a shared code path, confirm the non-Windows
+        branch is byte-for-byte equivalent to before, ideally pinned by a test.
+        Flag Windows-only APIs (setNativeArguments, CreateHardLinkW, windows.h)
+        used outside a platform guard.
+    - path: "backend/**/*.{cpp,h}"
+      instructions: >-
+        Stability rules (the project's non-negotiables: flag any violation).
+        Nothing may crash, leak, or race. Resources are RAII-managed: no manual
+        new/delete, ownership explicit via unique_ptr/shared_ptr, raw pointers
+        non-owning and obviously so. Every QObject has a parent: no orphaned
+        QObjects, no unsafe manual deletes; destruction order mirrors dependency
+        order. Cross-thread signal/slot connections must be queued and use correct
+        signatures; shared data must be mutex-protected or immutable (no data
+        races). No blocking or heavy work on the UI/main thread: push it to a
+        worker (QtConcurrent/QThread). Async tasks must handle completion, error,
+        AND cancellation deterministically, and guard captured objects with
+        QPointer. Every error path is handled explicitly: no silent `return;`, no
+        ignored return values, no swallowed exceptions. Shutdown must be
+        deterministic (timers/threads stopped, no work after teardown). No hacks,
+        shortcuts, TODO markers, or dead code may ship.
+    - path: "frontend/**/*.qml"
+      instructions: >-
+        QML review: never build or strip file URLs by hand ("file://" + path or
+        .replace("file://","")): use the PathUtils singleton, which is correct on
+        Windows. Do not edit a shared component to fix one consumer; override on
+        the instance. Wrap user-visible strings in qsTr(). No em-dashes or AI-slop
+        copy in user-facing text. Remember QML changes still owe a human visual
+        verify: a passing build does not prove the UI renders.
+    - path: "tests/**"
+      instructions: >-
+        Tests must actually exercise the behaviour, not just compile. A bug-fix
+        test must fail without the fix. Prefer asserting observable output over
+        internal state.
+    - path: "**/*.md"
+      instructions: >-
+        Documentation: no em-dashes, no AI-slop phrasing. Keep internal
+        development context (plan numbers, dates, decision history) out of files
+        that ship publicly.
+
+  tools:
+    github-checks:
+      enabled: true
+    markdownlint:
+      enabled: true
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  learnings:
+    scope: local

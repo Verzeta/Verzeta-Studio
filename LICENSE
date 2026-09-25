@@ -1,0 +1,34 @@
+Verzeta Studio is released under a triple-license arrangement:
+
+  - GPL-3.0-or-later  for the differentiated components (RAGP,
+                       multi-agent cascade, session router, task and
+                       project workflow primitives, heartbeat subagent
+                       loop, unified audit trail, canvas runner
+                       sandbox).  Canonical text:
+                           LICENSES/GPL-3.0-or-later.txt
+
+  - LGPL-3.0-or-later for the supporting infrastructure (generic
+                       models, utilities, CRUD services, wire protocol
+                       implementation, UI components, design tokens,
+                       build tooling, LLM provider HTTP wrappers,
+                       test suite).  Canonical text:
+                           LICENSES/LGPL-3.0-or-later.txt
+
+  - Commercial        for organisations that do not want either
+                       copyleft variant.  Custom-negotiated; contact
+                       via the email in SECURITY.md.
+
+The applicable license for any given source file is declared inline
+via an SPDX-License-Identifier header at the top of that file.  The
+project is REUSE 3.0 compliant; run `reuse lint` to verify.
+
+A human-readable explanation of the triple-license arrangement,
+including which components fall into which tier and what each tier
+means for users / forks / integrators / contributors, is in
+LICENSING.md at the root of this repository.
+
+The "Verzeta" wordmark and logo are trademarks of the project owner;
+their permitted and prohibited uses are described in TRADEMARKS.md.
+
+Contributions are accepted under the Contributor License Agreement
+in CLA.md.

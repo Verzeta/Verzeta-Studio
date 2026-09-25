@@ -1,0 +1,39 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Verzeta Studio
+Upstream-Contact: Aditya Mehra <aix.m@outlook.com>
+Source: https://github.com/Verzeta/verzeta
+
+# REUSE 3.0 dep5 file. Declares license + copyright for paths that
+# cannot carry an inline SPDX header (binary assets, dot-files,
+# documentation, tooling configs).
+#
+# Source files (.cpp / .h / .qml / *.cmake / CMakeLists.txt / .qrc /
+# .json) carry their headers inline via `reuse annotate`. Anything the
+# linter cannot read a header out of falls under the rules below.
+
+Files: README.md
+Copyright: 2026 Aditya Mehra <aix.m@outlook.com>
+License: LGPL-3.0-or-later
+
+Files: .clang-format .clang-tidy .gitignore .gitmodules
+Copyright: 2026 Aditya Mehra <aix.m@outlook.com>
+License: LGPL-3.0-or-later
+
+Files:
+ resources/icons/*.png
+ resources/icons/*.svg
+ resources/icons/*.ico
+ resources/textures/*.png
+ resources/*.png
+ resources/*.jpg
+ resources/*.webp
+Copyright: 2026 Aditya Mehra <aix.m@outlook.com>
+License: LGPL-3.0-or-later
+
+Files: resources/project-templates/*.json
+Copyright: 2026 Aditya Mehra <aix.m@outlook.com>
+License: LGPL-3.0-or-later
+
+Files: Documentation/User/*.md
+Copyright: 2026 Aditya Mehra <aix.m@outlook.com>
+License: LGPL-3.0-or-later

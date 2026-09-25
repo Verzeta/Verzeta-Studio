@@ -1,0 +1,131 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+name: Bug report
+description: Report a reproducible defect. Reports without the troubleshooting steps and a debug log are closed automatically.
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. **Please read this first:**
+
+        - Low-effort reports ("X is not working" with no logs) are **closed automatically** and re-opened only once the required information is added.
+        - Work through the [Troubleshooting guide](https://github.com/Verzeta/Verzeta-Studio/blob/main/Documentation/User/10-troubleshooting.md) before filing: most reports are already answered there.
+        - **Do not paste API keys, full conversation contents, or other private data.** Redact before posting.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Before you file (all required)
+      description: Reports that have not done these are closed. Please be honest. It saves everyone a round trip.
+      options:
+        - label: I worked through the [Troubleshooting guide](https://github.com/Verzeta/Verzeta-Studio/blob/main/Documentation/User/10-troubleshooting.md) and my issue is not resolved there.
+          required: true
+        - label: I searched [existing issues](https://github.com/Verzeta/Verzeta-Studio/issues?q=is%3Aissue) and this is not a duplicate.
+          required: true
+        - label: I am on the latest release and can still reproduce this.
+          required: true
+        - label: I restarted the app and the problem still happens.
+          required: true
+        - label: I have removed API keys and any private data from everything I paste below.
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Verzeta Studio version
+      description: Exact version from **Help → About**.
+      placeholder: e.g. 1.0.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: How did you install it?
+      options:
+        # Every option MUST be a quoted string. Unquoted "Linux: AppImage"
+        # is a YAML mapping, not a string, and GitHub rejects the whole
+        # form with a parse error instead of rendering it.
+        - "Linux: AppImage"
+        - "Linux: built from source"
+        - "Windows: portable zip"
+        - "Windows: built from source"
+        - "macOS: built from source"
+        - 'Other (describe under "Steps to reproduce")'
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS name and version
+      placeholder: e.g. Windows 11 23H2, Ubuntu 24.04, Fedora 40
+    validations:
+      required: true
+
+  - type: input
+    id: provider
+    attributes:
+      label: Provider and model (if the bug involves an LLM)
+      description: The data flow depends on the active provider. Leave blank only if the bug has nothing to do with a provider.
+      placeholder: e.g. Ollama / qwen3:14b, or Anthropic / claude-sonnet-5
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Exact, numbered steps. A bug we cannot reproduce cannot be fixed.
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. Send the message "..."
+        4. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened
+      description: Include the **exact** error text shown in the app, if any.
+    validations:
+      required: true
+
+  - type: textarea
+    id: debug-log
+    attributes:
+      label: Debug log with traces (required)
+      description: |
+        Re-run Verzeta with full logging enabled, reproduce the problem, then paste the relevant section of the log here. This is required: "I didn't capture a log" reports are closed.
+
+        Turn on full detail and launch from the same window:
+        - **Linux:** `QT_LOGGING_RULES="verzeta.*=true" ./verzeta-studio`
+        - **Windows (PowerShell):** `$env:QT_LOGGING_RULES="verzeta.*=true"`, then start Verzeta
+        - **Windows (CMD):** `set QT_LOGGING_RULES=verzeta.*=true`, then start Verzeta
+
+        For streaming or workspace-mount problems also set `VERZETA_STREAM_TRACE=1` and/or `VERZETA_MOUNT_TRACE=1` the same way.
+
+        The log file is at `~/.local/share/Verzeta Studio/logs/verzeta-studio.log` (Linux) or `%APPDATA%\Verzeta Studio\logs\verzeta-studio.log` (Windows). Paste the lines around the failure (redact anything private).
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else you already ruled out (optional)
+      description: '"I already tried X and Y and the issue persists" saves a round trip.'
+    validations:
+      required: false

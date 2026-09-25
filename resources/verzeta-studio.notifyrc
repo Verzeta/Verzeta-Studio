@@ -1,0 +1,72 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+#
+# KNotifications event catalog for Verzeta Studio.
+#
+# KNotification looks this up via the application's componentName
+# (set via KNotification::setComponentName or via the Q_INVOKABLE
+# convention "appname"). For Verzeta the componentName is
+# "verzeta-studio", matching the binary name and the .desktop file.
+#
+# Each [Event/<id>] section defines one notification kind. The C++
+# side fires `KNotification::event("responseComplete", ...)` etc.
+# Users can configure per-event behaviour (popup / sound / log) in
+# their system notification settings — KDE's System Settings →
+# Notifications, or the equivalent on other desktops.
+
+[Global]
+IconName=verzeta-studio
+Comment=Verzeta Studio — Multi-provider LLM workspace
+Name=Verzeta Studio
+
+# ----------------------------------------------------------------
+# An LLM response completed in the background. Used when the user
+# has switched away from a conversation and a streaming response
+# finishes.
+# ----------------------------------------------------------------
+[Event/responseComplete]
+Name=Response Ready
+Comment=A streaming response completed in a background conversation
+IconName=dialog-messages
+Action=Popup
+Sound=Oxygen-Im-New-Session.ogg
+
+# ----------------------------------------------------------------
+# An agent @-mentioned the user in a group chat. The most
+# attention-grabbing of the events — sound + popup.
+# ----------------------------------------------------------------
+[Event/userMentioned]
+Name=You Were Mentioned
+Comment=An agent @-mentioned you in a group chat
+IconName=user-online
+Action=Popup|Sound
+Sound=Oxygen-Im-User-Auth.ogg
+
+# ----------------------------------------------------------------
+# Image generated (DALL·E / Imagen / etc.) — file landed in the
+# conversation's artifact dir and is ready to view.
+# ----------------------------------------------------------------
+[Event/imageReady]
+Name=Image Generated
+Comment=An image-generation tool call completed
+IconName=image-x-generic
+Action=Popup
+
+# ----------------------------------------------------------------
+# Audio generated (TTS / music) — same shape as image.
+# ----------------------------------------------------------------
+[Event/audioReady]
+Name=Audio Generated
+Comment=An audio-generation tool call completed
+IconName=audio-volume-high
+Action=Popup
+
+# ----------------------------------------------------------------
+# Generic informational fallback. Used by NotificationManager::notify()
+# call sites that don't have a dedicated event type yet.
+# ----------------------------------------------------------------
+[Event/info]
+Name=Verzeta Notification
+Comment=General-purpose notification from Verzeta
+IconName=verzeta-studio
+Action=Popup

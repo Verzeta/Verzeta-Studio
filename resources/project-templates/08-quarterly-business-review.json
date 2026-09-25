@@ -1,0 +1,18 @@
+{
+  "id": "quarterly-business-review",
+  "name": "Quarterly Business Review",
+  "tagLabel": "EXECUTIVE",
+  "category": "exec",
+  "geometryKind": "dots",
+  "baseHue": 270,
+  "scenario": "Quarterly business review",
+  "goal": "Synthesise the quarter into an executive-ready review: results vs. plan, top three wins, top three risks, the next-quarter ask, and a decision register.",
+  "description": "An executive owns the narrative and the asks. A project manager pulls together milestones, delivery dates, and team status. An analyst converts raw numbers into trends with context. A writer turns the synthesis into a board-ready memo.",
+  "coordinator": "Executive",
+  "members": [
+    { "alias": "Project Manager", "agentTemplate": "Project Manager" },
+    { "alias": "Analyst", "agentTemplate": "Analyst" },
+    { "alias": "Writer", "agentTemplate": "Writer" }
+  ],
+  "seedDocuments": []
+}

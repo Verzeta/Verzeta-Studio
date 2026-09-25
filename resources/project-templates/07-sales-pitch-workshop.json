@@ -1,0 +1,18 @@
+{
+  "id": "sales-pitch-workshop",
+  "name": "Sales Pitch Workshop",
+  "tagLabel": "SALES",
+  "category": "sales",
+  "geometryKind": "spiral",
+  "baseHue": 45,
+  "scenario": "Sales pitch · narrative + objections",
+  "goal": "Sharpen the sales pitch deck: opening hook, value framing, three customer stories, objection handling, and a clear ask. Produce a one-page pitch summary and a list of anticipated questions with crisp answers.",
+  "description": "A sales lead drives the narrative and owns the customer voice. A writer tightens every slide and turns rough notes into pitch-ready prose. An analyst pulls comparable numbers and pressure-tests every claim before it hits the deck.",
+  "coordinator": "Product Manager",
+  "members": [
+    { "alias": "Sales Lead", "agentTemplate": "Sales" },
+    { "alias": "Writer", "agentTemplate": "Writer" },
+    { "alias": "Analyst", "agentTemplate": "Analyst" }
+  ],
+  "seedDocuments": []
+}

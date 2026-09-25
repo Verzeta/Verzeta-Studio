@@ -1,0 +1,18 @@
+{
+  "id": "technical-spec",
+  "name": "Technical Spec",
+  "tagLabel": "ENG. PLANNING",
+  "category": "engineering",
+  "geometryKind": "bars",
+  "baseHue": 240,
+  "scenario": "Technical spec · architecture proposal",
+  "goal": "Produce a technical specification document for a new feature: problem statement, proposed design, alternatives considered, risks, and rollout plan. End with an ADR-style decision record.",
+  "description": "An engineer drafts the proposed design. A designer makes sure the user-facing surfaces and trade-offs are explicit. A reviewer pressure-tests every assumption and demands the alternatives section be honest. The team ships one approved spec.",
+  "coordinator": "Engineering Manager",
+  "members": [
+    { "alias": "Engineer", "agentTemplate": "Engineer" },
+    { "alias": "Designer", "agentTemplate": "Designer" },
+    { "alias": "Reviewer", "agentTemplate": "Code Reviewer" }
+  ],
+  "seedDocuments": []
+}

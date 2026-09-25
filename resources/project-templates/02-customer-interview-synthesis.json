@@ -1,0 +1,18 @@
+{
+  "id": "customer-interview-synthesis",
+  "name": "Customer Interview Synthesis",
+  "tagLabel": "DISCOVERY",
+  "category": "discovery",
+  "geometryKind": "wave",
+  "baseHue": 180,
+  "scenario": "Customer interview synthesis",
+  "goal": "Turn raw customer interview transcripts into themes, supporting quotes, and a recommendations memo. Identify the top three friction points the team can act on this quarter.",
+  "description": "A researcher reads through every transcript and pulls out direct quotes. An analyst clusters the quotes into themes and ranks them by frequency and severity. A writer turns the analysis into a tight recommendations memo for the product team.",
+  "coordinator": "Product Manager",
+  "members": [
+    { "alias": "Note Taker", "agentTemplate": "Researcher" },
+    { "alias": "Analyst", "agentTemplate": "Analyst" },
+    { "alias": "Writer", "agentTemplate": "Writer" }
+  ],
+  "seedDocuments": []
+}

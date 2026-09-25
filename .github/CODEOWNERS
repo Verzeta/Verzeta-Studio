@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+#
+# Every change requires review from the maintainer. Combined with branch
+# protection's "Require review from Code Owners", this makes @AIIX a mandatory
+# reviewer on every pull request. The last matching pattern wins, so the
+# security-critical surfaces below are listed after the catch-all.
+
+# Default owner for everything in the repository.
+*                                       @AIIX
+
+# Security- and governance-critical surfaces (already covered by * above;
+# listed explicitly so intent is documented and survives any future team growth).
+/.github/                               @AIIX
+/CONTRIBUTING.md                        @AIIX
+/SECURITY.md                            @AIIX
+/LICENSING.md                           @AIIX
+/CLA.md                                 @AIIX
+/backend/remote/                        @AIIX
+/backend/utils/process-sandbox.cpp      @AIIX
+/backend/services/skill-service.cpp     @AIIX

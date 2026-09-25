@@ -1,0 +1,18 @@
+{
+  "id": "research-brief",
+  "name": "Research Brief",
+  "tagLabel": "RESEARCH",
+  "category": "discovery",
+  "geometryKind": "circles",
+  "baseHue": 210,
+  "scenario": "Research brief · multi-source",
+  "goal": "Produce a cited research brief on a chosen topic. Deliver a markdown report with every claim traced to a source.",
+  "description": "A researcher gathers material from multiple sources, an analyst structures the findings, and a reviewer challenges the conclusions and citations before the brief ships. Suited to market scans, competitor analysis, technology surveys, and pre-decision discovery.",
+  "coordinator": "Project Manager",
+  "members": [
+    { "alias": "Researcher", "agentTemplate": "Researcher" },
+    { "alias": "Analyst", "agentTemplate": "Analyst" },
+    { "alias": "Reviewer", "agentTemplate": "Code Reviewer" }
+  ],
+  "seedDocuments": []
+}

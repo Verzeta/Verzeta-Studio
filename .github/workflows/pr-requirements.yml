@@ -1,0 +1,138 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+# Hard gate for pull requests. A PR must:
+#   1. have a conventional title (type(scope): summary);
+#   2. link a REAL, OPEN issue via a closing keyword (verified against the API,
+#      not just a "#number") that is not itself flagged incomplete;
+#   3. have a non-empty Summary and Why;
+#   4. have every checklist box ticked;
+#   5. paste real build + test proof.
+# Non-compliant PRs are labelled `needs-requirements`, commented on, and the
+# check fails. The stale workflow closes a PR left non-compliant for 24 hours.
+#
+# Uses pull_request_target so it can label/comment on fork PRs. It only reads
+# the PR body/title and queries issues: it never checks out or runs PR code.
+name: PR requirements
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, ready_for_review, synchronize]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  validate:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || "";
+            const title = pr.title || "";
+            const problems = [];
+
+            // 1. Conventional PR title (matches the project's commit style).
+            const titleRe = /^(feat|fix|docs|refactor|perf|test|build|ci|chore)(\([a-z0-9.\-/]+\))?: .{6,}/;
+            if (!titleRe.test(title)) {
+              problems.push("**PR title must follow the project style** `type(scope): summary`, e.g. `fix(windows): correct cmd.exe quoting`. Allowed types: feat, fix, docs, refactor, perf, test, build, ci, chore.");
+            }
+
+            // 2. EVERY PR must be backed by a real, open, complete issue.
+            const refs = [...body.matchAll(/\b(?:closes|fixes|resolves)\s+#(\d+)/gi)].map(m => parseInt(m[1], 10));
+            if (refs.length === 0) {
+              problems.push("**Every PR must address an existing issue.** Link it with a closing keyword: `Closes #123`. If no issue exists, open one first (it goes through the required bug/feature template). Undiscussed drive-by PRs are not accepted.");
+            } else {
+              let validIssue = false;
+              for (const n of [...new Set(refs)]) {
+                try {
+                  const { data: iss } = await github.rest.issues.get({ ...context.repo, issue_number: n });
+                  if (iss.pull_request) {
+                    problems.push(`**#${n} is a pull request, not an issue.** Link the tracking *issue* this PR resolves.`);
+                    continue;
+                  }
+                  const labelNames = (iss.labels || []).map(l => (typeof l === "string" ? l : l.name));
+                  if (iss.state !== "open") {
+                    problems.push(`**Linked issue #${n} is closed.** Link the open issue this PR addresses.`);
+                    continue;
+                  }
+                  if (labelNames.includes("needs-info")) {
+                    problems.push(`**Linked issue #${n} is itself incomplete** (labelled \`needs-info\`). Bring the issue up to standard (a valid debug log and steps) before submitting a fix.`);
+                    continue;
+                  }
+                  validIssue = true;
+                } catch (e) {
+                  problems.push(`**Linked issue #${n} does not exist.** Reference a real, open issue.`);
+                }
+              }
+              if (!validIssue && !problems.some(p => p.includes(`#`))) {
+                problems.push("**No valid linked issue found.** Every PR must resolve a real, open issue.");
+              }
+            }
+
+            // 3. Non-empty Summary and Why (not just the template comments).
+            function section(heading) {
+              const re = new RegExp("##\\s*" + heading + "\\s*\\n([\\s\\S]*?)(?:\\n##\\s|$)", "i");
+              const m = body.match(re);
+              if (!m) return "";
+              // strip HTML comments and whitespace
+              return m[1].replace(/<!--[\s\S]*?-->/g, "").trim();
+            }
+            if (section("Summary").length < 10) {
+              problems.push("**The Summary section is empty.** Describe what the change does.");
+            }
+            if (section("Why").length < 10) {
+              problems.push("**The Why section is empty.** Explain the reasoning, not just the what.");
+            }
+
+            // 4. Every checklist box ticked.
+            const boxes = body.match(/- \[[ xX]\]/g) || [];
+            const unchecked = boxes.filter(b => /\[ \]/.test(b)).length;
+            if (boxes.length < 5) {
+              problems.push("**The PR checklist is missing or was deleted.** Restore the template and address every item.");
+            } else if (unchecked > 0) {
+              problems.push(`**${unchecked} checklist item(s) are not ticked.** Every box must be checked: tick it and add \"(N/A: reason)\" if one genuinely does not apply.`);
+            }
+
+            // 5. Build + test proof present.
+            const proof = (body.match(/##\s*Build and test proof([\s\S]*?)(?:\n##\s|$)/i) || [null, ""])[1];
+            const hasBuild = /cmake --build|cmake --preset|ninja|Built target/i.test(proof);
+            const hasTests = /tests?\s+passed|100% tests|0 tests failed|ctest/i.test(proof);
+            if (!hasBuild || !hasTests) {
+              problems.push("**No build/test proof.** Paste the real output of `cmake --build build-debug` and `ctest --test-dir build-debug --output-on-failure` under **Build and test proof**, including the `100% tests passed` line.");
+            }
+
+            const marker = "<!-- verzeta-pr-requirements -->";
+            const comments = await github.rest.issues.listComments({
+              ...context.repo, issue_number: pr.number, per_page: 100 });
+            const prev = comments.data.find(c => c.body && c.body.includes(marker));
+
+            async function ensureLabel(name, color) {
+              try { await github.rest.issues.getLabel({ ...context.repo, name }); }
+              catch { try { await github.rest.issues.createLabel({ ...context.repo, name, color }); } catch (e) {} }
+            }
+
+            if (problems.length) {
+              await ensureLabel("needs-requirements", "b60205");
+              await github.rest.issues.addLabels({
+                ...context.repo, issue_number: pr.number, labels: ["needs-requirements"] });
+              try { await github.rest.issues.removeLabel({ ...context.repo, issue_number: pr.number, name: "requirements-met" }); } catch (e) {}
+              const msg = marker + "\n\n" +
+                "This pull request does **not** meet the contribution requirements yet:\n\n" +
+                problems.map(p => "- " + p).join("\n") + "\n\n" +
+                "The bar is deliberately high: it keeps the codebase and the tracker free of cruft. Please update the PR to satisfy **every** point. A PR left non-compliant is **closed after 24 hours**; you can reopen it once it qualifies. See [CONTRIBUTING.md](https://github.com/Verzeta/Verzeta-Studio/blob/main/CONTRIBUTING.md).";
+              if (prev) await github.rest.issues.updateComment({ ...context.repo, comment_id: prev.id, body: msg });
+              else await github.rest.issues.createComment({ ...context.repo, issue_number: pr.number, body: msg });
+              core.setFailed("PR does not meet the contribution requirements.");
+            } else {
+              try { await github.rest.issues.removeLabel({ ...context.repo, issue_number: pr.number, name: "needs-requirements" }); } catch (e) {}
+              await ensureLabel("requirements-met", "0e8a16");
+              await github.rest.issues.addLabels({
+                ...context.repo, issue_number: pr.number, labels: ["requirements-met"] });
+              if (prev) await github.rest.issues.updateComment({ ...context.repo, comment_id: prev.id,
+                body: marker + "\n\nAll contribution requirements are present: conventional title, a real linked issue, non-empty description, full checklist, and build/test proof. Thanks: this is ready for review." });
+            }

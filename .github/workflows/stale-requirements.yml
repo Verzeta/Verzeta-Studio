@@ -1,0 +1,59 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+# Closes non-compliant work that has gone quiet:
+#   - PRs still labelled `needs-requirements` after ~24h of no updates.
+#   - Bug reports still labelled `needs-info` after 14 days of no updates.
+# Any update from the author resets the clock (and the requirement workflows
+# clear the label once fixed), so only genuinely abandoned items are closed.
+name: Close stale non-compliant items
+
+on:
+  schedule:
+    # Every six hours. Hourly gave the public repository 24 scheduled runs
+    # a day on a tracker that is usually empty; the requirement comment
+    # promises a PR is closed "after 24 hours", which a six-hourly sweep
+    # still honours (it closes between 24 and 30 hours).
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  prs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          only-labels: "needs-requirements"
+          days-before-pr-stale: 1
+          days-before-pr-close: 0
+          days-before-issue-stale: -1
+          days-before-issue-close: -1
+          remove-stale-when-updated: true
+          stale-pr-label: "stale"
+          close-pr-message: >-
+            Closing this pull request: it has not met the contribution
+            requirements within 24 hours (see the requirements comment above).
+            You are welcome to reopen it once it builds cleanly, passes the
+            tests at 100%, links an issue, and completes the checklist. Thank you.
+
+  issues:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          only-labels: "needs-info"
+          days-before-issue-stale: 14
+          days-before-issue-close: 0
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          remove-stale-when-updated: true
+          stale-issue-label: "stale"
+          close-issue-message: >-
+            Closing this report: the requested troubleshooting log and details
+            were not added within 14 days. Comment with the missing information
+            (a `verzeta.*=true` debug log and exact steps) and it will reopen.
+            Thank you.

@@ -1,0 +1,51 @@
+# SPDX-FileCopyrightText: 2026 Aditya Mehra <aix.m@outlook.com>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+name: Feature request
+description: Propose a feature or enhancement. Open this BEFORE writing a patch.
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Per [CONTRIBUTING.md](https://github.com/Verzeta/Verzeta-Studio/blob/main/CONTRIBUTING.md#proposing-features), please open a feature request **before** writing a patch: the feature may overlap with planned work, or need design notes the maintainer can share first.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do that Verzeta Studio does not let you do today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What would you like to see? Be concrete about the behaviour, not just the goal.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Workarounds you tried, other designs you weighed, or why the existing features do not cover this.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check (all required)
+      description: Verzeta Studio is local-first and privacy-preserving. These categories are declined per CONTRIBUTING.md.
+      options:
+        - label: This is **not** telemetry, analytics, fingerprinting, or "anonymous usage statistics".
+          required: true
+        - label: This is **not** an auto-update or phone-home mechanism the user did not explicitly enable.
+          required: true
+        - label: This does **not** require a forced cloud account to use the software.
+          required: true
+        - label: I searched existing issues and this feature has not already been proposed.
+          required: true
