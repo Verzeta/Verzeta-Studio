@@ -30,7 +30,7 @@
 
 LlamaCppRemoteProvider::LlamaCppRemoteProvider(HttpClient& http, QObject* parent)
     : OpenAIProvider(http, parent), m_propsNam(this) {
-    setBaseUrl(QStringLiteral("http://localhost:8080/v1"));
+    setDefaultBaseUrl(QStringLiteral("http://localhost:8080/v1"));
     // llama.cpp server is mono-model — whichever GGUF was passed to
     // the server CLI is the only "model" exposed. We seed a single
     // synthetic entry; the user picks it via the standard model

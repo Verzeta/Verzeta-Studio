@@ -18,7 +18,7 @@
 
 DeepSeekProvider::DeepSeekProvider(HttpClient& http, QObject* parent)
     : OpenAIProvider(http, parent) {
-    setBaseUrl(QStringLiteral("https://api.deepseek.com/v1"));
+    setDefaultBaseUrl(QStringLiteral("https://api.deepseek.com/v1"));
     m_models = {
         QStringLiteral("deepseek-flash"),
         QStringLiteral("deepseek-v4-pro"),

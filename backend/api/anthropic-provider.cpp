@@ -223,7 +223,9 @@ void AnthropicProvider::setApiKey(const QString& key) {
 }
 
 void AnthropicProvider::setBaseUrl(const QString& url) {
-    m_baseUrl = url;
+    // An empty value restores the default endpoint.
+    const QString trimmed = url.trimmed();
+    m_baseUrl = trimmed.isEmpty() ? QStringLiteral("https://api.anthropic.com/v1") : trimmed;
 }
 
 // ---------------------------------------------------------------------------

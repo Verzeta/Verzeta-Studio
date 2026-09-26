@@ -92,7 +92,11 @@ GeminiProvider::GeminiProvider(HttpClient& http, QObject* parent)
 // ---------------------------------------------------------------------------
 
 void GeminiProvider::setBaseUrl(const QString& url) {
-    m_baseUrl = url;
+    // An empty value restores the default endpoint.
+    const QString trimmed = url.trimmed();
+    m_baseUrl = trimmed.isEmpty()
+                    ? QStringLiteral("https://generativelanguage.googleapis.com/v1beta")
+                    : trimmed;
 }
 
 void GeminiProvider::setApiKey(const QString& key) {

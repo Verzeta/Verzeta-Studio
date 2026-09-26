@@ -137,6 +137,15 @@ bool OpenAIProvider::requiresApiKey() const {
 }
 
 void OpenAIProvider::setBaseUrl(const QString& url) {
+    // The Settings URL field is optional; saving it empty must not leave
+    // the provider with no endpoint (every request then fails before it is
+    // sent, with Qt's "Protocol is unknown" error).
+    const QString trimmed = url.trimmed();
+    m_baseUrl = trimmed.isEmpty() ? m_defaultBaseUrl : trimmed;
+}
+
+void OpenAIProvider::setDefaultBaseUrl(const QString& url) {
+    m_defaultBaseUrl = url;
     m_baseUrl = url;
 }
 

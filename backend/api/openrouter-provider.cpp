@@ -21,7 +21,7 @@
 OpenRouterProvider::OpenRouterProvider(HttpClient& http, QObject* parent)
     : OpenAIProvider(http, parent) {
     // OpenRouter API root.
-    setBaseUrl(QStringLiteral("https://openrouter.ai/api/v1"));
+    setDefaultBaseUrl(QStringLiteral("https://openrouter.ai/api/v1"));
     // OpenRouter's catalog is huge (300+ models) and changes
     // frequently. Start empty and let refreshModels() populate via
     // GET /v1/models once the user provides a key.

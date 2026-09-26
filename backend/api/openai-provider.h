@@ -59,7 +59,9 @@ class OpenAIProvider : public ILLMProvider {
 
     /**
      * @brief Sets the base URL (allows pointing to OpenAI-compatible proxies).
-     * @param url Base URL (default: "https://api.openai.com/v1").
+     * @param url Base URL. An empty or blank value restores the provider's
+     *            default, so clearing the optional URL field in Settings
+     *            never leaves the provider without an endpoint.
      */
     void setBaseUrl(const QString& url);
 
@@ -181,6 +183,15 @@ class OpenAIProvider : public ILLMProvider {
     QString m_apiKey;  ///< API key; empty when none is configured. Never logged.
     QString m_baseUrl = QStringLiteral(
         "https://api.openai.com/v1");  ///< API base URL, without a trailing endpoint.
+    QString m_defaultBaseUrl = QStringLiteral(
+        "https://api.openai.com/v1");  ///< Restored when setBaseUrl() gets an empty value.
+
+    /**
+     * @brief Sets both the default and the current base URL. Subclasses call
+     *        it from their constructor for their own API endpoint.
+     * @param url The provider's own API base URL.
+     */
+    void setDefaultBaseUrl(const QString& url);
 
     /**
      * @brief model id → context window (tokens) cache.
