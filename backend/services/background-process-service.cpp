@@ -252,6 +252,7 @@ BackgroundProcessService::StartOutcome BackgroundProcessService::startOnMain(
 
     auto* proc = new QProcess(this);
     proc->setProcessChannelMode(QProcess::MergedChannels);
+    m_sandbox.prepareAgentProcess(*proc, workingDir);
     if (!workingDir.isEmpty())
         proc->setWorkingDirectory(workingDir);
 

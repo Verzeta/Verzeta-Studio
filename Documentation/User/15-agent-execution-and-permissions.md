@@ -67,9 +67,30 @@ Two protections stay in place no matter what is on the list:
   refused. Ordinary commands, pipes, loops, heredocs such as
   `python3 - <<'EOF'` and `bash -c 'literal commands'` are not affected.
 - **Commands start in the current project's folder.** This is where relative
-  paths point. It is not a sandbox: a command can still use absolute paths or
-  `cd` elsewhere, with your user's permissions. Unlike canvas **Run**, agent
-  shell commands are not run inside bubblewrap.
+  paths point. On its own it is not a sandbox: a command can still use
+  absolute paths or `cd` elsewhere, with your user's permissions.
+
+## Write protection (optional)
+
+The **Write protection** switch in the same editor is off by default. When you
+turn it on, commands agents run (and background processes they start) can
+still read files and run programs anywhere, but can only create, change or
+delete files in:
+
+- the current project folder,
+- temporary folders (`/tmp` and your temp directory),
+- folders you add with **Add folder**.
+
+Anything else, such as your home folder or system folders, is refused by the
+operating system and the agent sees a "Permission denied" error. Package
+caches are moved to a temporary folder so `pip` and `npm` keep working;
+installing packages globally or with `pip install --user` will not, so have
+agents use a virtual environment in the project instead.
+
+Write protection uses the Landlock feature of the Linux kernel, so it needs no
+extra software and also works in the AppImage. It is not available on Windows
+or on Linux systems without Landlock; the switch is disabled there. It does not
+apply to commands you type yourself in the Terminal page.
 
 If you remove every program from the list, agents will not be able to run any
 shell command until you add one back or choose Restore to Default.

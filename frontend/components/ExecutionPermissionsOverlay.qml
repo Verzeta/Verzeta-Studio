@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 import QtQuick
 import QtQuick.Controls as Controls
+import QtQuick.Dialogs as Dialogs
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.verzeta.studio 1.0
@@ -38,6 +39,30 @@ AppOverlayDialog {
         if (i >= 0) {
             list.splice(i, 1);
             SettingsService.shellAllowList = list;
+        }
+    }
+
+    function _removeFolder(path) {
+        var list = SettingsService.shellWritableFolders.slice();
+        var i = list.indexOf(path);
+        if (i >= 0) {
+            list.splice(i, 1);
+            SettingsService.shellWritableFolders = list;
+        }
+    }
+
+    Dialogs.FolderDialog {
+        id: writableFolderPicker
+        title: qsTr("Allow agents to write in a folder")
+        onAccepted: {
+            var path = PathUtils.toLocalFile(selectedFolder);
+            if (path.length === 0)
+                return;
+            var list = SettingsService.shellWritableFolders.slice();
+            if (list.indexOf(path) < 0) {
+                list.push(path);
+                SettingsService.shellWritableFolders = list;
+            }
         }
     }
 
@@ -220,6 +245,108 @@ AppOverlayDialog {
                             }
                         }
                     }
+                }
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            radius: ThemeController.radius
+            color: sheet._cPanel
+            antialiasing: true
+            implicitHeight: writeCol.implicitHeight + Kirigami.Units.gridUnit * 2
+
+            ColumnLayout {
+                id: writeCol
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    top: parent.top
+                    margins: Kirigami.Units.gridUnit
+                }
+                spacing: Kirigami.Units.smallSpacing
+
+                Kirigami.Heading {
+                    level: 4
+                    text: qsTr("Write protection")
+                    font.family: ThemeController.fontFamily
+                }
+                Controls.Switch {
+                    Layout.fillWidth: true
+                    text: qsTr("Only let agent commands write inside the project folder")
+                    enabled: SettingsService.shellWriteRestrictionAvailable
+                    checked: SettingsService.shellWriteRestriction
+                    onToggled: SettingsService.shellWriteRestriction = checked
+                }
+                Controls.Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    font.family: ThemeController.fontFamily
+                    color: Kirigami.Theme.disabledTextColor
+                    text: SettingsService.shellWriteRestrictionAvailable ? qsTr("Off by default. When on, commands agents run can still " + "read files and run programs anywhere, but can only " + "create, change or delete files in the project folder, " + "temporary folders and the folders below.") : qsTr("Not available on this system. Write protection needs " + "Linux with the Landlock security module.")
+                }
+
+                Flow {
+                    Layout.fillWidth: true
+                    Layout.topMargin: Kirigami.Units.smallSpacing
+                    spacing: Kirigami.Units.smallSpacing
+                    visible: SettingsService.shellWriteRestrictionAvailable && SettingsService.shellWritableFolders.length > 0
+
+                    Repeater {
+                        model: SettingsService.shellWritableFolders
+
+                        delegate: Rectangle {
+                            id: folderPill
+                            required property string modelData
+
+                            implicitWidth: Math.min(folderRow.implicitWidth + 16, writeCol.width)
+                            implicitHeight: 28
+                            radius: height / 2
+                            color: sheet._cWell
+                            border.width: 1
+                            border.color: ThemeController.borderSubtle
+                            antialiasing: true
+
+                            RowLayout {
+                                id: folderRow
+                                anchors.fill: parent
+                                anchors.leftMargin: 10
+                                anchors.rightMargin: 4
+                                spacing: 4
+
+                                Controls.Label {
+                                    text: folderPill.modelData
+                                    elide: Text.ElideMiddle
+                                    Layout.fillWidth: true
+                                    Layout.maximumWidth: implicitWidth
+                                    font.family: ThemeController.fontFamily
+                                    font.pointSize: Kirigami.Theme.defaultFont.pointSize * 0.95
+                                    Layout.alignment: Qt.AlignVCenter
+                                }
+                                Controls.ToolButton {
+                                    icon.name: "edit-delete-remove"
+                                    icon.width: 12
+                                    icon.height: 12
+                                    display: Controls.AbstractButton.IconOnly
+                                    padding: 2
+                                    implicitWidth: 18
+                                    implicitHeight: 18
+                                    Layout.alignment: Qt.AlignVCenter
+                                    Controls.ToolTip.text: qsTr("Remove %1").arg(folderPill.modelData)
+                                    Controls.ToolTip.visible: hovered
+                                    Controls.ToolTip.delay: 500
+                                    onClicked: sheet._removeFolder(folderPill.modelData)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                AppButton {
+                    visible: SettingsService.shellWriteRestrictionAvailable
+                    text: qsTr("Add folder")
+                    icon.name: "folder-new"
+                    onClicked: writableFolderPicker.open()
                 }
             }
         }

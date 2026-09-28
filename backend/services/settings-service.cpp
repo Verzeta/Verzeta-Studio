@@ -48,6 +48,7 @@
 #include "../utils/crypto-utils.h"
 #include "../utils/logger.h"
 #include "../utils/process-sandbox.h"
+#include "../utils/write-guard.h"
 
 // ---------------------------------------------------------------------------
 // Constructor
@@ -571,6 +572,50 @@ void SettingsService::resetShellAllowListToDefault() {
                              << q.lastError().text();
     }
     emit shellAllowListChanged();
+}
+
+bool SettingsService::shellWriteRestriction() const {
+    return getSetting(QStringLiteral("shell_write_restriction"), QStringLiteral("0")) ==
+           QLatin1String("1");
+}
+
+void SettingsService::setShellWriteRestriction(bool enabled) {
+    if (enabled == shellWriteRestriction())
+        return;
+    setSetting(QStringLiteral("shell_write_restriction"),
+               enabled ? QStringLiteral("1") : QStringLiteral("0"));
+    emit shellWriteRestrictionChanged();
+}
+
+QStringList SettingsService::shellWritableFolders() const {
+    const QJsonDocument doc = QJsonDocument::fromJson(
+        getSetting(QStringLiteral("shell_writable_folders"), QString()).toUtf8());
+    QStringList out;
+    for (const QJsonValue& v : doc.array()) {
+        const QString s = v.toString().trimmed();
+        if (!s.isEmpty() && !out.contains(s))
+            out.append(s);
+    }
+    return out;
+}
+
+void SettingsService::setShellWritableFolders(const QStringList& folders) {
+    QJsonArray arr;
+    QStringList seen;
+    for (const QString& f : folders) {
+        const QString s = f.trimmed();
+        if (!s.isEmpty() && !seen.contains(s)) {
+            seen.append(s);
+            arr.append(s);
+        }
+    }
+    setSetting(QStringLiteral("shell_writable_folders"),
+               QString::fromUtf8(QJsonDocument(arr).toJson(QJsonDocument::Compact)));
+    emit shellWritableFoldersChanged();
+}
+
+bool SettingsService::shellWriteRestrictionAvailable() const {
+    return Verzeta::WriteGuard::available();
 }
 
 void SettingsService::setFontSize(int size) {

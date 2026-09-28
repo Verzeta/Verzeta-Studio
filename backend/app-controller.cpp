@@ -746,6 +746,22 @@ bool AppController::initialize() {
             m_terminalController->setAllowList(m_settingsService->shellAllowList());
     });
 
+    // Optional write restriction for agent commands (off by default).
+    auto applyWriteRestriction = [this]() {
+        if (m_terminalController)
+            m_terminalController->setWriteRestriction(m_settingsService->shellWriteRestriction(),
+                                                      m_settingsService->shellWritableFolders());
+    };
+    applyWriteRestriction();
+    connect(m_settingsService.get(),
+            &SettingsService::shellWriteRestrictionChanged,
+            this,
+            applyWriteRestriction);
+    connect(m_settingsService.get(),
+            &SettingsService::shellWritableFoldersChanged,
+            this,
+            applyWriteRestriction);
+
     m_backgroundProcessService =
         std::make_unique<BackgroundProcessService>(*m_terminalController, this);
     connect(m_convController.get(),

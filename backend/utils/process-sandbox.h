@@ -147,6 +147,42 @@ class ProcessSandbox : public QObject {
      */
     static QString uncheckableCodeReason(const QString& command);
 
+    /**
+     * @brief Turns the optional write restriction for agent commands on or
+     *        off (Linux Landlock; see Verzeta::WriteGuard). Off by default.
+     *
+     * When on, run_shell and background processes may write only inside
+     * their working folder, the temp folders, /dev and @p extraRoots;
+     * reading and running programs are unaffected. Package caches are
+     * pointed at a temp folder so pip and npm keep working.
+     *
+     * @param enabled    Whether to restrict writes.
+     * @param extraRoots Additional folders the user allows writes to.
+     */
+    void setWriteRestriction(bool enabled, const QStringList& extraRoots);
+
+    /**
+     * @brief Whether agent commands are currently write-restricted.
+     * @returns true when the restriction is enabled AND the system
+     *          supports it.
+     */
+    bool writeRestrictionActive() const;
+
+    /**
+     * @brief Folders an agent command may write to under the restriction.
+     * @param workingDir The command's working folder (may be empty).
+     * @returns workingDir, the temp folders, /dev and the extra folders.
+     */
+    QStringList writableRoots(const QString& workingDir) const;
+
+    /**
+     * @brief Applies the write restriction (when active) to a process that
+     *        is about to run an agent command. No-op when inactive.
+     * @param proc       The process, before start().
+     * @param workingDir The command's working folder (may be empty).
+     */
+    void prepareAgentProcess(QProcess& proc, const QString& workingDir) const;
+
     // -----------------------------------------------------------------------
     // Control
     // -----------------------------------------------------------------------
@@ -218,6 +254,9 @@ class ProcessSandbox : public QObject {
     // The destructive-pattern scanner still gates the full command on every
     // execute(), so an allow-listed program cannot smuggle rm -rf / or curl|sh.
     QStringList m_allowList;
+
+    bool m_writeRestricted = false;    ///< User setting; off by default
+    QStringList m_extraWritableRoots;  ///< User-granted writable folders
 
     QProcess* m_process = nullptr;  ///< Active async process (owned)
     QString m_asyncStdout;          ///< Accumulated stdout for async run

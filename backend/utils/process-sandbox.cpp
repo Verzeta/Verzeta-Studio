@@ -14,6 +14,7 @@
 #include "process-sandbox.h"
 
 #include "shell-command-inspector.h"
+#include "write-guard.h"
 
 // QtGlobal MUST be included before any `#ifdef Q_OS_*` -- the
 // platform macros live in <qsystemdetection.h> which QtGlobal pulls
@@ -29,6 +30,7 @@
 #include <QtGlobal>
 #include <QTimer>
 
+#include <QDir>
 #include <QFileInfo>
 #include <QProcess>
 
@@ -63,6 +65,47 @@ ProcessSandbox::ProcessSandbox(QObject* parent) : QObject(parent) {
  *          Linux/macOS; cmd.exe builtins + read-only utilities + curl/taskkill
  *          on Windows; empty on Android (shell exec is refused there).
  */
+void ProcessSandbox::setWriteRestriction(bool enabled, const QStringList& extraRoots) {
+    m_writeRestricted = enabled;
+    m_extraWritableRoots = extraRoots;
+}
+
+bool ProcessSandbox::writeRestrictionActive() const {
+    return m_writeRestricted && Verzeta::WriteGuard::available();
+}
+
+QStringList ProcessSandbox::writableRoots(const QString& workingDir) const {
+    QStringList roots;
+    if (!workingDir.isEmpty())
+        roots << workingDir;
+    roots << QDir::tempPath() << QStringLiteral("/tmp") << QStringLiteral("/var/tmp")
+          << QStringLiteral("/dev");
+    roots << m_extraWritableRoots;
+    return roots;
+}
+
+void ProcessSandbox::prepareAgentProcess(QProcess& proc, const QString& workingDir) const {
+#ifdef Q_OS_LINUX
+    if (!writeRestrictionActive())
+        return;
+    // Caches normally live in the home folder, which is read-only here;
+    // keep pip, npm and other XDG-aware tools working from a temp folder.
+    const QString cacheDir = QDir::tempPath() + QStringLiteral("/verzeta-shell-cache");
+    QDir().mkpath(cacheDir);
+    QProcessEnvironment env = proc.processEnvironment().isEmpty()
+                                  ? QProcessEnvironment::systemEnvironment()
+                                  : proc.processEnvironment();
+    env.insert(QStringLiteral("XDG_CACHE_HOME"), cacheDir);
+    env.insert(QStringLiteral("npm_config_cache"), cacheDir + QStringLiteral("/npm"));
+    env.insert(QStringLiteral("PIP_CACHE_DIR"), cacheDir + QStringLiteral("/pip"));
+    proc.setProcessEnvironment(env);
+    proc.setChildProcessModifier(Verzeta::WriteGuard::childSetup(writableRoots(workingDir)));
+#else
+    Q_UNUSED(proc);
+    Q_UNUSED(workingDir);
+#endif
+}
+
 QString ProcessSandbox::uncheckableCodeReason(const QString& command) {
 #ifdef Q_OS_WIN
     Q_UNUSED(command);
@@ -264,6 +307,7 @@ ProcessSandbox::execute(const QString& command, int timeoutMs, const QString& wo
     if (!workingDir.isEmpty()) {
         proc.setWorkingDirectory(workingDir);
     }
+    prepareAgentProcess(proc, workingDir);
 #ifdef Q_OS_WIN
     // cmd.exe parses its own command line, so passing `command` through the
     // QProcess argument list applies CRT quoting that cmd then mis-parses,

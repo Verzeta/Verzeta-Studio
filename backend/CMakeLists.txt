@@ -215,6 +215,7 @@ add_library(verzeta-studio-backend STATIC
 
     utils/dangerous-pattern-scanner.cpp
     utils/shell-command-inspector.cpp
+    utils/write-guard.cpp
 
     remote/wire-host-bridge.cpp
     remote/server/wire-auth.cpp

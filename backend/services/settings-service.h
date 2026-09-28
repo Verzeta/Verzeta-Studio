@@ -75,6 +75,11 @@ class SettingsService : public QObject {
      *  allow. The destructive-pattern scanner still gates every command. */
     Q_PROPERTY(QStringList shellAllowList READ shellAllowList WRITE setShellAllowList NOTIFY
                    shellAllowListChanged)
+    Q_PROPERTY(bool shellWriteRestriction READ shellWriteRestriction WRITE setShellWriteRestriction
+                   NOTIFY shellWriteRestrictionChanged)
+    Q_PROPERTY(QStringList shellWritableFolders READ shellWritableFolders WRITE
+                   setShellWritableFolders NOTIFY shellWritableFoldersChanged)
+    Q_PROPERTY(bool shellWriteRestrictionAvailable READ shellWriteRestrictionAvailable CONSTANT)
 
     Q_PROPERTY(QString databasePath READ databasePath CONSTANT)
 
@@ -733,6 +738,38 @@ class SettingsService : public QObject {
     Q_INVOKABLE void resetShellAllowListToDefault();
 
     /**
+     * @brief Whether agent shell commands may only write inside the project
+     *        folder, temp folders and shellWritableFolders().
+     * @returns The user's choice; false (off) unless turned on.
+     */
+    bool shellWriteRestriction() const;
+
+    /**
+     * @brief Turns the agent shell write restriction on or off.
+     * @param enabled The new setting.
+     */
+    void setShellWriteRestriction(bool enabled);
+
+    /**
+     * @brief Extra folders agent commands may write to while the write
+     *        restriction is on.
+     * @returns Absolute folder paths, in the order the user added them.
+     */
+    QStringList shellWritableFolders() const;
+
+    /**
+     * @brief Persists the extra writable folders (deduplicated, trimmed).
+     * @param folders Absolute folder paths.
+     */
+    void setShellWritableFolders(const QStringList& folders);
+
+    /**
+     * @brief Whether this system can enforce the write restriction.
+     * @returns true on Linux with Landlock available.
+     */
+    bool shellWriteRestrictionAvailable() const;
+
+    /**
      * @brief Persists the per-turn tool-iteration budget.
      * @param cap Maximum chained tool iterations; 0 = unlimited. Negatives
      *            are treated as the default.
@@ -958,6 +995,10 @@ class SettingsService : public QObject {
 
     /** @brief Emitted whenever the shell command allow-list changes. */
     void shellAllowListChanged();
+    /** @brief Emitted when shellWriteRestriction() changes. */
+    void shellWriteRestrictionChanged();
+    /** @brief Emitted when shellWritableFolders() changes. */
+    void shellWritableFoldersChanged();
 
     /** @brief Emitted whenever firstRunComplete() flips. */
     void firstRunCompleteChanged();
