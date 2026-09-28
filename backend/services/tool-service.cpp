@@ -12,6 +12,8 @@
 
 #include "tool-service.h"
 
+#include "../utils/dangerous-pattern-scanner.h"
+
 // QtGlobal must come before any `#ifdef Q_OS_*` so the platform
 // macros are defined. Other Qt includes pull this in transitively
 // today; explicit include is the documented safe pattern after the
@@ -284,6 +286,82 @@ bool ToolService::isToolEnabled(const QString& name) const {
     return it != m_tools.end() && it->enabled;
 }
 
+QString ToolService::substituteTemplate(const QString& commandTemplate,
+                                        const QJsonObject& args,
+                                        QString* refusal) {
+    auto valueOf = [&args](const QString& key) {
+        const QJsonValue v = args.value(key);
+        return v.isString() ? v.toString() : v.toVariant().toString();
+    };
+#ifdef Q_OS_WIN
+    // cmd.exe has no reliable escaping, so values carrying its special
+    // characters are refused rather than inserted.
+    static const QString kCmdMeta = QStringLiteral("&|<>^%!\"\r\n");
+    for (auto it = args.begin(); it != args.end(); ++it) {
+        if (!commandTemplate.contains(QStringLiteral("{{%1}}").arg(it.key())))
+            continue;
+        for (const QChar c : valueOf(it.key())) {
+            if (kCmdMeta.contains(c)) {
+                if (refusal)
+                    *refusal =
+                        QStringLiteral(
+                            "The value for '%1' contains a character that cmd.exe would treat "
+                            "as a command separator or variable (& | < > ^ % ! \" or a line "
+                            "break). Pass it without those characters.")
+                            .arg(it.key());
+                return {};
+            }
+        }
+    }
+#endif
+    QString out;
+    out.reserve(commandTemplate.size());
+    enum { None, Single, Double } quote = None;
+    for (int i = 0; i < commandTemplate.size(); ++i) {
+        const QChar c = commandTemplate.at(i);
+        if (c == QLatin1Char('{') && commandTemplate.mid(i, 2) == QLatin1String("{{")) {
+            const int close = commandTemplate.indexOf(QStringLiteral("}}"), i + 2);
+            const QString key = close > 0 ? commandTemplate.mid(i + 2, close - i - 2) : QString();
+            if (close > 0 && args.contains(key)) {
+                const QString v = valueOf(key);
+#ifdef Q_OS_WIN
+                out += (quote == Double) ? v : QLatin1Char('"') + v + QLatin1Char('"');
+#else
+                if (quote == Double) {
+                    // Inside "...": escape the characters bash still interprets.
+                    for (const QChar ch : v) {
+                        if (ch == QLatin1Char('\\') || ch == QLatin1Char('"') ||
+                            ch == QLatin1Char('$') || ch == QLatin1Char('`'))
+                            out += QLatin1Char('\\');
+                        out += ch;
+                    }
+                } else {
+                    QString q = v;
+                    q.replace(QLatin1Char('\''), QStringLiteral("'\\''"));
+                    // Inside '...' the value just continues the quoted text;
+                    // outside quotes it becomes one single-quoted word.
+                    out += (quote == Single) ? q : QLatin1Char('\'') + q + QLatin1Char('\'');
+                }
+#endif
+                i = close + 1;
+                continue;
+            }
+        }
+        // Track the template's own quoting to know each placeholder's context.
+        if (c == QLatin1Char('\\') && quote != Single && i + 1 < commandTemplate.size()) {
+            out += c;
+            out += commandTemplate.at(++i);
+            continue;
+        }
+        if (c == QLatin1Char('\'') && quote != Double)
+            quote = (quote == Single) ? None : Single;
+        else if (c == QLatin1Char('"') && quote != Single)
+            quote = (quote == Double) ? None : Double;
+        out += c;
+    }
+    return out;
+}
+
 bool ToolService::addCustomTool(const QVariantMap& toolDef) {
     const QString name = toolDef[QStringLiteral("name")].toString().trimmed();
     if (name.isEmpty())
@@ -316,20 +394,40 @@ bool ToolService::addCustomTool(const QVariantMap& toolDef) {
             schema.parameters.append(p);
     }
 
-    // If a command template is provided, create a handler that runs it
-    // through ProcessSandbox with argument substitution.
+    // Run limit: default 30 s, configurable per tool within 1..600 s.
+    int timeoutSeconds = toolDef.value(QStringLiteral("timeoutSeconds"), 30).toInt();
+    if (timeoutSeconds <= 0)
+        timeoutSeconds = 30;
+    timeoutSeconds = qBound(1, timeoutSeconds, 600);
+
+    // If a command template is provided, create a handler that runs it with
+    // the agent's values substituted safely (see substituteTemplate).
     // Otherwise create a no-op handler that returns the args.
     ToolHandler handler;
     if (!commandTemplate.isEmpty()) {
-        // Capture by value for the lambda
-        handler = [commandTemplate](const QJsonObject& args) -> QJsonValue {
-            // Substitute {{paramName}} placeholders with argument values
-            QString cmd = commandTemplate;
-            for (auto it = args.begin(); it != args.end(); ++it) {
-                const QString placeholder = QStringLiteral("{{%1}}").arg(it.key());
-                cmd.replace(placeholder, it.value().toVariant().toString());
+        handler = [commandTemplate, timeoutSeconds](const QJsonObject& args) -> QJsonValue {
+            QString refusal;
+            const QString cmd = substituteTemplate(commandTemplate, args, &refusal);
+            if (!refusal.isEmpty()) {
+                QJsonObject result;
+                result[QStringLiteral("error")] = refusal;
+                return result;
+            }
+            // Same destructive-pattern check as run_shell. The template is
+            // the user's own, so the program allow-list is not applied.
+            const Verzeta::ScanResult scan = Verzeta::scanForDangerousPatterns(cmd);
+            if (!scan.allowed) {
+                QJsonObject result;
+                result[QStringLiteral("error")] = scan.reason;
+                return result;
             }
 
+            // Cross-platform shell selector:
+            //   - Linux + macOS: /bin/sh -c <cmd>
+            //   - Windows:       cmd.exe  /c <cmd>
+            //   - Android:       hard-fail with a JSON error stub --
+            //                    Qt apps on Android can't fork/exec
+            //                    arbitrary shell commands.
             QProcess proc;
             proc.setProcessChannelMode(QProcess::MergedChannels);
 #ifdef Q_OS_ANDROID
@@ -343,7 +441,7 @@ bool ToolService::addCustomTool(const QVariantMap& toolDef) {
 #else
             proc.start(QStringLiteral("/bin/sh"), {QStringLiteral("-c"), cmd});
 #endif
-            proc.waitForFinished(30000);
+            proc.waitForFinished(timeoutSeconds * 1000);
 
             QJsonObject result;
             result[QStringLiteral("stdout")] = QString::fromUtf8(proc.readAllStandardOutput());
@@ -368,6 +466,8 @@ bool ToolService::addCustomTool(const QVariantMap& toolDef) {
     row.handler = std::move(handler);
     row.kind = ToolKind::Custom;
     row.enabled = true;
+    row.commandTemplate = commandTemplate;
+    row.timeoutSeconds = timeoutSeconds;
     m_tools[name] = std::move(row);
     qCInfo(verzetaTools) << "ToolService: added custom tool" << name;
     emit toolsChanged();
@@ -424,9 +524,11 @@ void ToolService::saveCustomTools() {
             params.append(pm);
         }
         def[QStringLiteral("parameters")] = params;
-        // Note: commandTemplate is embedded in the lambda closure,
-        // we can't extract it. Store it in schema.description or metadata.
-        // For now, save it if it was stored.
+        // Without the template a reloaded tool would silently do nothing.
+        if (!it->commandTemplate.isEmpty()) {
+            def[QStringLiteral("commandTemplate")] = it->commandTemplate;
+            def[QStringLiteral("timeoutSeconds")] = it->timeoutSeconds;
+        }
         customs.append(def);
     }
     root[QStringLiteral("customTools")] = customs;
@@ -473,6 +575,9 @@ void ToolService::loadCustomTools(ProcessSandbox& /*sandbox*/) {
             params.append(pv.toObject().toVariantMap());
         }
         toolDef[QStringLiteral("parameters")] = params;
+        toolDef[QStringLiteral("commandTemplate")] =
+            def[QStringLiteral("commandTemplate")].toString();
+        toolDef[QStringLiteral("timeoutSeconds")] = def[QStringLiteral("timeoutSeconds")].toInt(30);
         addCustomTool(toolDef);
     }
 

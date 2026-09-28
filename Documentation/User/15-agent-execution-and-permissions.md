@@ -82,10 +82,13 @@ tool has a switch to turn it on or off.
 - **Built-in**: the tools that ship with Verzeta Studio.
 - **Custom**: your own tools, added with **Add Custom Tool**. Each one runs a
   **Command Template**, with `{{param_name}}` replaced by the value the agent
-  passes. Custom tools do **not** go through the allow-list or the
-  dangerous-pattern check: the command runs directly in a shell with your
-  user's permissions, for up to 30 seconds. Write the template with that in
-  mind.
+  passes. The value is always inserted as plain text, quoted for where the
+  placeholder sits (bare, inside `"..."` or inside `'...'`), so it can never
+  add a command of its own. On Windows, values containing `& | < > ^ % !` or
+  `"` are refused. The finished command goes through the dangerous-pattern
+  check but not the allow-list (the template is yours), and runs in a shell
+  with your user's permissions for up to the **Time limit** you set (30
+  seconds by default, at most 600).
 - **MCP**: tools from Model Context Protocol servers. Click **Add MCP Server**,
   choose the **Transport Type** (stdio for a local program such as `npx`,
   `python` or `uvx`, or SSE or Streamable HTTP for a server), and enter the

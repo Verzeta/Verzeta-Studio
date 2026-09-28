@@ -328,10 +328,36 @@ class ToolService : public QObject {
     /**
      * @brief Adds a custom tool from a QML-friendly map.
      * @param toolDef Map with: name, description, commandTemplate,
-     *                parameters [{name, type, description, required}]
+     *                parameters [{name, type, description, required}],
+     *                and optional timeoutSeconds (1-600, default 30).
+     *                Each {{param}} in the template is replaced by the
+     *                agent's value quoted for its position in the
+     *                template, so a value can never add commands.
      * @return true on success, false if name is empty or conflicts with built-in.
      */
     Q_INVOKABLE bool addCustomTool(const QVariantMap& toolDef);
+
+    /**
+     * @brief Replaces each {{param}} in a custom tool's command template
+     *        with the agent's value, quoted for the placeholder's position.
+     *
+     * POSIX: a bare placeholder becomes one single-quoted word; inside
+     * "..." the value has \\ " $ and ` escaped; inside '...' embedded
+     * single quotes are closed and reopened. Existing templates therefore
+     * produce the same text for ordinary values, and no value can add a
+     * command, redirection or substitution. Windows: values containing
+     * & | < > ^ % ! " or a line break are refused, others are inserted in
+     * double quotes. Placeholders with no matching argument are left as
+     * they are.
+     *
+     * @param commandTemplate The tool's template.
+     * @param args            The agent's arguments.
+     * @param refusal         Set to the reason when a value is refused.
+     * @returns The command to run, or an empty string when refused.
+     */
+    static QString substituteTemplate(const QString& commandTemplate,
+                                      const QJsonObject& args,
+                                      QString* refusal = nullptr);
 
     /**
      * @brief Removes a custom tool. Built-in tools cannot be removed.
@@ -384,6 +410,8 @@ class ToolService : public QObject {
     struct RegisteredTool {
         ToolSchema schema;
         ToolHandler handler;
+        QString commandTemplate;  ///< Custom tools: the shell template (saved with the tool)
+        int timeoutSeconds = 30;  ///< Custom tools: run limit in seconds (saved with the tool)
         ToolKind kind = ToolKind::Custom;  ///< First-class category
         bool enabled = true;               ///< false = excluded from LLM requests
         /** Cached main-thread-residency flag. Set by

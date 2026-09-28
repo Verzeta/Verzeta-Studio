@@ -17,6 +17,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QStandardPaths>
 
 class TestToolService : public QObject {
     Q_OBJECT
@@ -481,6 +482,105 @@ class TestToolService : public QObject {
                                     .arg(name)));
         }
     }
+
+#ifndef Q_OS_WIN
+    void test_customTemplate_barePlaceholderQuoted() {
+        QJsonObject args{{QStringLiteral("v"), QStringLiteral("a; touch X")}};
+        QCOMPARE(ToolService::substituteTemplate(QStringLiteral("printf '%s' {{v}}"), args),
+                 QStringLiteral("printf '%s' 'a; touch X'"));
+    }
+
+    void test_customTemplate_doubleQuotedOrdinaryValueUnchanged() {
+        QJsonObject args{{QStringLiteral("n"), QStringLiteral("Bob Smith")}};
+        QCOMPARE(ToolService::substituteTemplate(QStringLiteral("echo \"Hi {{n}}!\""), args),
+                 QStringLiteral("echo \"Hi Bob Smith!\""));
+    }
+
+    void test_customTemplate_doubleQuotedExpansionEscaped() {
+        QJsonObject args{{QStringLiteral("n"), QStringLiteral("$(id) `id` \" \\")}};
+        QCOMPARE(ToolService::substituteTemplate(QStringLiteral("echo \"{{n}}\""), args),
+                 QStringLiteral("echo \"\\$(id) \\`id\\` \\\" \\\\\""));
+    }
+
+    void test_customTemplate_singleQuotedQuoteEscaped() {
+        QJsonObject args{{QStringLiteral("n"), QStringLiteral("x'; touch X; echo '")}};
+        QCOMPARE(ToolService::substituteTemplate(QStringLiteral("echo 'Hi {{n}}'"), args),
+                 QStringLiteral("echo 'Hi x'\\''; touch X; echo '\\'''"));
+    }
+
+    void test_customTemplate_missingArgumentLeftAlone() {
+        QCOMPARE(ToolService::substituteTemplate(QStringLiteral("echo {{absent}}"), QJsonObject{}),
+                 QStringLiteral("echo {{absent}}"));
+    }
+
+    void test_customTool_injectionDoesNotRun() {
+        QStandardPaths::setTestModeEnabled(true);
+        QTemporaryDir dir;
+        const QString marker = dir.filePath(QStringLiteral("pwned"));
+        ToolService svc;
+        QVERIFY(svc.addCustomTool(QVariantMap{
+            {QStringLiteral("name"), QStringLiteral("say")},
+            {QStringLiteral("commandTemplate"), QStringLiteral("printf '%s' {{text}}")},
+            {QStringLiteral("parameters"),
+             QVariantList{QVariantMap{{QStringLiteral("name"), QStringLiteral("text")}}}},
+        }));
+        const QJsonObject r =
+            svc.invokeTool(QStringLiteral("say"),
+                           QJsonObject{{QStringLiteral("text"),
+                                        QStringLiteral("hi; touch %1").arg(marker)}})
+                .toObject();
+        QCOMPARE(r.value(QStringLiteral("stdout")).toString(),
+                 QStringLiteral("hi; touch %1").arg(marker));
+        QVERIFY(!QFile::exists(marker));
+        svc.removeCustomTool(QStringLiteral("say"));
+    }
+
+    void test_customTool_destructivePatternRefused() {
+        QStandardPaths::setTestModeEnabled(true);
+        ToolService svc;
+        QVERIFY(svc.addCustomTool(QVariantMap{
+            {QStringLiteral("name"), QStringLiteral("wipe")},
+            {QStringLiteral("commandTemplate"), QStringLiteral("rm -rf {{path}}")},
+            {QStringLiteral("parameters"),
+             QVariantList{QVariantMap{{QStringLiteral("name"), QStringLiteral("path")}}}},
+        }));
+        const QJsonObject r = svc.invokeTool(QStringLiteral("wipe"),
+                                             QJsonObject{{QStringLiteral("path"),
+                                                          QStringLiteral("/tmp/nothing-here")}})
+                                  .toObject();
+        QVERIFY(r.contains(QStringLiteral("error")));
+        svc.removeCustomTool(QStringLiteral("wipe"));
+    }
+
+    void test_customTool_templatePersists() {
+        QStandardPaths::setTestModeEnabled(true);
+        {
+            ToolService svc;
+            QVERIFY(svc.addCustomTool(QVariantMap{
+                {QStringLiteral("name"), QStringLiteral("greet")},
+                {QStringLiteral("commandTemplate"), QStringLiteral("printf 'hello %s' {{who}}")},
+                {QStringLiteral("timeoutSeconds"), 45},
+                {QStringLiteral("parameters"),
+                 QVariantList{QVariantMap{{QStringLiteral("name"), QStringLiteral("who")}}}},
+            }));
+        }
+        ToolService reloaded;
+        ProcessSandbox sandbox;
+        reloaded.loadCustomTools(sandbox);
+        const QJsonObject r =
+            reloaded
+                .invokeTool(QStringLiteral("greet"),
+                            QJsonObject{{QStringLiteral("who"), QStringLiteral("world")}})
+                .toObject();
+        QCOMPARE(r.value(QStringLiteral("stdout")).toString(), QStringLiteral("hello world"));
+        QFile saved(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) +
+                    QStringLiteral("/custom-tools.json"));
+        QVERIFY(saved.open(QIODevice::ReadOnly));
+        QVERIFY(saved.readAll().contains("\"timeoutSeconds\": 45"));
+        saved.close();
+        reloaded.removeCustomTool(QStringLiteral("greet"));
+    }
+#endif
 };
 
 QTEST_MAIN(TestToolService)

@@ -656,6 +656,23 @@ Rectangle {
                 font.family: ThemeController.codeFontFamily
                 font.pointSize: Kirigami.Theme.defaultFont.pointSize
             }
+            RowLayout {
+                Layout.fillWidth: true
+                Controls.Label {
+                    text: qsTr("Time limit (seconds)")
+                    font.pointSize: Kirigami.Theme.defaultFont.pointSize
+                }
+                Controls.SpinBox {
+                    id: toolTimeoutSpin
+                    from: 1
+                    to: 600
+                    value: 30
+                    editable: true
+                }
+                Item {
+                    Layout.fillWidth: true
+                }
+            }
 
             Controls.Label {
                 text: qsTr("Parameters")
@@ -768,12 +785,14 @@ Rectangle {
                                 "name": toolNameField.text,
                                 "description": toolDescField.text,
                                 "commandTemplate": toolCmdField.text,
+                                "timeoutSeconds": toolTimeoutSpin.value,
                                 "parameters": params
                             });
                         if (ok) {
                             toolNameField.text = "";
                             toolDescField.text = "";
                             toolCmdField.text = "";
+                            toolTimeoutSpin.value = 30;
                             paramModel.clear();
                             addToolDialog.close();
                         }
