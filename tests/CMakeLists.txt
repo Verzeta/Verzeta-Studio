@@ -829,6 +829,8 @@ add_integration_test(test-ragp-pipeline-e2e
 add_unit_test(test-agent-service unit/test-agent-service.cpp)
 
 add_unit_test(test-image-service unit/test-image-service.cpp)
+add_unit_test(test-shell-command-inspector unit/test-shell-command-inspector.cpp)
+add_unit_test(test-process-sandbox unit/test-process-sandbox.cpp)
 add_unit_test(test-audio-service unit/test-audio-service.cpp)
 
 add_integration_test(test-multimedia-pipeline integration/test-multimedia-pipeline.cpp)

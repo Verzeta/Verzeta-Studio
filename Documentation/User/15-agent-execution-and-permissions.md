@@ -61,6 +61,11 @@ Two protections stay in place no matter what is on the list:
   formatting a disk, writing to system paths, shutting down the computer, or
   downloading a script and piping it straight into a shell are refused even if
   the program itself is allowed.
+- **Code that cannot be checked is refused.** Piping text into a shell
+  (`... | bash`, `base64 -d | sh`), `eval` of text built from variables, and
+  `bash -c "$VAR"` run code nobody can inspect before it runs, so they are
+  refused. Ordinary commands, pipes, loops, heredocs such as
+  `python3 - <<'EOF'` and `bash -c 'literal commands'` are not affected.
 - **Commands start in the current project's folder.** This is where relative
   paths point. It is not a sandbox: a command can still use absolute paths or
   `cd` elsewhere, with your user's permissions. Unlike canvas **Run**, agent

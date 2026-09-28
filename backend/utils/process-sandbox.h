@@ -135,6 +135,18 @@ class ProcessSandbox : public QObject {
      */
     static QStringList defaultAllowList();
 
+    /**
+     * @brief Refusal reason for command forms that run code which cannot be
+     *        checked before it runs (eval of dynamic text, a dynamic
+     *        `sh -c` script, text piped into a shell). Applied after the
+     *        allow-list and the destructive-pattern scan; everything else
+     *        is unaffected.
+     * @param command Full command string.
+     * @returns The reason to refuse, or an empty string. Always empty on
+     *          Windows, where commands are not POSIX shell syntax.
+     */
+    static QString uncheckableCodeReason(const QString& command);
+
     // -----------------------------------------------------------------------
     // Control
     // -----------------------------------------------------------------------

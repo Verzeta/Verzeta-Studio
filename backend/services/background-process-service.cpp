@@ -236,6 +236,10 @@ BackgroundProcessService::StartOutcome BackgroundProcessService::startOnMain(
         outcome.error = scan.reason;
         return outcome;
     }
+    if (const QString why = ProcessSandbox::uncheckableCodeReason(command); !why.isEmpty()) {
+        outcome.error = why;
+        return outcome;
+    }
 
     const QString id = QStringLiteral("bg%1").arg(++m_idCounter);
 

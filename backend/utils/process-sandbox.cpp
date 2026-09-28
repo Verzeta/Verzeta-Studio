@@ -13,6 +13,8 @@
 
 #include "process-sandbox.h"
 
+#include "shell-command-inspector.h"
+
 // QtGlobal MUST be included before any `#ifdef Q_OS_*` -- the
 // platform macros live in <qsystemdetection.h> which QtGlobal pulls
 // in. This file's #ifdef gates happen to work today because QProcess
@@ -61,6 +63,15 @@ ProcessSandbox::ProcessSandbox(QObject* parent) : QObject(parent) {
  *          Linux/macOS; cmd.exe builtins + read-only utilities + curl/taskkill
  *          on Windows; empty on Android (shell exec is refused there).
  */
+QString ProcessSandbox::uncheckableCodeReason(const QString& command) {
+#ifdef Q_OS_WIN
+    Q_UNUSED(command);
+    return {};
+#else
+    return Verzeta::inspectPosixCommand(command).refusal;
+#endif
+}
+
 QStringList ProcessSandbox::defaultAllowList() {
 #ifdef Q_OS_WIN
     // Windows: cmd.exe builtins + read-only Windows utilities. All entries are
@@ -239,6 +250,12 @@ ProcessSandbox::execute(const QString& command, int timeoutMs, const QString& wo
             return result;
         }
     }
+    if (const QString why = uncheckableCodeReason(command); !why.isEmpty()) {
+        emit commandBlocked(command, why);
+        result.exitCode = -1;
+        result.stderrOutput = why;
+        return result;
+    }
 
     QProcess proc;
     // Run in the requested working directory (e.g. the conversation's
@@ -341,6 +358,15 @@ void ProcessSandbox::executeAsync(const QString& command, int timeoutMs) {
             emit commandFinished(res);
             return;
         }
+    }
+    if (const QString why = uncheckableCodeReason(command); !why.isEmpty()) {
+        emit commandBlocked(command, why);
+        emit outputLine(QStringLiteral("[stderr] ") + why);
+        CommandResult res;
+        res.exitCode = -1;
+        res.stderrOutput = why;
+        emit commandFinished(res);
+        return;
     }
 
     m_asyncStdout.clear();
