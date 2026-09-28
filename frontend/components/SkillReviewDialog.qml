@@ -6,16 +6,17 @@ import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.verzeta.studio 1.0
 
-Kirigami.Dialog {
+AppOverlayDialog {
     id: dialog
+    parent: applicationWindow().overlay
+    implicitWidth: Math.min(applicationWindow().width * 0.9, Kirigami.Units.gridUnit * 38)
 
     readonly property string skillLabel: currentSkill.displayName || currentSkill.id || ""
 
     readonly property bool isApproved: (currentSkill.reviewState || "") === "approved"
 
     title: (dialog.isApproved ? qsTr("Skill: %1") : qsTr("Review Skill: %1")).arg(dialog.skillLabel)
-    preferredWidth: Kirigami.Units.gridUnit * 38
-    preferredHeight: Kirigami.Units.gridUnit * 32
+    dialogIcon: "applications-education"
 
     property var currentSkill: ({})
 
@@ -27,35 +28,34 @@ Kirigami.Dialog {
         open();
     }
 
-    standardButtons: Kirigami.Dialog.NoButton
-
-    customFooterActions: [
-        Kirigami.Action {
+    footer: RowLayout {
+        AppButton {
             text: qsTr("Block")
-            icon.name: "edit-delete"
-            onTriggered: {
+            onClicked: {
                 Skills.blockSkill(currentSkill.id);
                 dialog.close();
             }
-        },
-        Kirigami.Action {
+        }
+        Item {
+            Layout.fillWidth: true
+        }
+        AppButton {
             text: dialog.isApproved ? qsTr("Close") : qsTr("Cancel")
-            icon.name: "dialog-cancel"
-            onTriggered: dialog.close()
-        },
-        Kirigami.Action {
+            onClicked: dialog.close()
+        }
+        AppButton {
             text: qsTr("Approve")
-            icon.name: "dialog-ok"
+            highlighted: true
             visible: !dialog.isApproved
             enabled: ackCheckbox.checked
-            onTriggered: {
+            onClicked: {
                 Skills.approveSkill(currentSkill.id);
                 dialog.close();
             }
         }
-    ]
+    }
 
-    contentItem: ColumnLayout {
+    ColumnLayout {
         spacing: 12
 
         Rectangle {
@@ -84,6 +84,7 @@ Kirigami.Dialog {
                 }
                 Controls.CheckBox {
                     id: ackCheckbox
+                    Layout.fillWidth: true
                     text: qsTr("I understand that I am responsible for how this skill is used.")
                 }
             }
@@ -95,10 +96,14 @@ Kirigami.Dialog {
             Controls.Label {
                 text: dialog.skillLabel
                 font.bold: true
+                elide: Text.ElideRight
+                Layout.fillWidth: true
             }
             Controls.Label {
                 visible: (currentSkill.displayName || "") !== "" && currentSkill.displayName !== currentSkill.id
                 text: currentSkill.id || ""
+                elide: Text.ElideMiddle
+                Layout.fillWidth: true
                 font.family: ThemeController.codeFontFamily
                 font.pointSize: Kirigami.Theme.defaultFont.pointSize * 0.85
                 color: Kirigami.Theme.disabledTextColor
@@ -110,6 +115,8 @@ Kirigami.Dialog {
             }
             Controls.Label {
                 text: qsTr("version %1 • hash %2 • source %3").arg(currentSkill.version || "-").arg(currentSkill.contentHashShort || "-").arg(currentSkill.source || "manual")
+                wrapMode: Text.Wrap
+                Layout.fillWidth: true
                 color: Kirigami.Theme.disabledTextColor
                 font.pointSize: Kirigami.Theme.defaultFont.pointSize * 0.85
             }
@@ -145,6 +152,7 @@ Kirigami.Dialog {
                 Controls.ScrollView {
                     anchors.fill: parent
                     clip: true
+                    contentWidth: availableWidth
                     Controls.TextArea {
                         id: instructionsArea
                         readOnly: true
@@ -159,6 +167,7 @@ Kirigami.Dialog {
                 Controls.ScrollView {
                     anchors.fill: parent
                     clip: true
+                    contentWidth: availableWidth
                     ColumnLayout {
                         width: parent.parent.width
                         spacing: 6
@@ -190,6 +199,8 @@ Kirigami.Dialog {
                                     Controls.Label {
                                         text: warnCol.modelData.regexName + " · " + warnCol.modelData.fileRelativePath + ":" + warnCol.modelData.lineNumber
                                         font.bold: true
+                                        wrapMode: Text.WrapAnywhere
+                                        Layout.fillWidth: true
                                         color: Kirigami.Theme.neutralTextColor
                                     }
                                     Controls.Label {
@@ -209,20 +220,27 @@ Kirigami.Dialog {
                 Controls.ScrollView {
                     anchors.fill: parent
                     clip: true
+                    contentWidth: availableWidth
                     ColumnLayout {
                         width: parent.parent.width
                         spacing: 4
                         Controls.Label {
                             Layout.margins: 12
                             text: qsTr("Name: %1").arg(currentSkill.displayName || currentSkill.id || "-")
+                            wrapMode: Text.Wrap
+                            Layout.fillWidth: true
                         }
                         Controls.Label {
                             Layout.margins: 12
                             text: qsTr("Tags: %1").arg((currentSkill.tags || []).join(", ") || "-")
+                            wrapMode: Text.Wrap
+                            Layout.fillWidth: true
                         }
                         Controls.Label {
                             Layout.margins: 12
                             text: qsTr("Declared tools (advisory): %1").arg((currentSkill.declaredTools || []).join(", ") || "-")
+                            wrapMode: Text.Wrap
+                            Layout.fillWidth: true
                         }
                         Controls.Label {
                             Layout.margins: 12
