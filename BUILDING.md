@@ -5,7 +5,7 @@ SPDX-License-Identifier: LGPL-3.0-or-later
 
 # Building Verzeta Studio from source
 
-Verzeta Studio 1.0.0 supports Linux and Windows. Each release publishes a Linux AppImage and a Windows zip; this page explains how to build from source.
+Verzeta Studio supports Linux and Windows. Each release publishes a Linux AppImage and a Windows zip; this page explains how to build from source.
 
 ---
 
@@ -152,7 +152,7 @@ Inno Setup 6 is available at <https://jrsoftware.org/isdl.php>. The installer sc
 
 ## macOS
 
-macOS is not supported in 1.0.0.
+macOS is not supported yet.
 
 ---
 

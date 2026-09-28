@@ -15,7 +15,7 @@
 # including frontend/ produces noise rather than documentation.
 
 PROJECT_NAME           = "Verzeta Studio"
-PROJECT_NUMBER         = "1.0.0"
+PROJECT_NUMBER         = "1.0.1"
 PROJECT_BRIEF          = "Local-first desktop workspace for a team of AI agents"
 
 OUTPUT_DIRECTORY       = doxygen-out

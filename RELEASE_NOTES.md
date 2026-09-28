@@ -9,6 +9,26 @@ Public release notes for Verzeta Studio. The release workflow publishes the
 section whose heading matches the release version (`## [X.Y.Z]`) as the GitHub
 release body. Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.1] - 2026-09-28
+
+### Fixed
+
+- Clearing a provider's optional URL in Settings no longer breaks every request with a protocol error. An empty URL now means the provider's default endpoint.
+- The skill review window keeps a normal size instead of stretching with the skill's text.
+- Custom tools keep their command after a restart. Before, they silently stopped working.
+- Values passed to custom tools are inserted as plain text and can no longer add commands of their own.
+
+### Added
+
+- The chat shows "Generating image" while an image is being made.
+- First-run setup includes optional Image Generation and Web Search steps.
+- Custom tools have a time limit setting (30 seconds by default).
+- Optional write protection on Linux. When turned on in Execution & Permissions, commands agents run can only write inside the project, temporary folders and folders you choose.
+
+### Changed
+
+- Shell commands that pipe text into a shell, or run `eval` or `bash -c` on text built from variables, are refused, because what they run cannot be checked first.
+
 ## [1.0.0] - 2026-09-22
 
 The first public release of **Verzeta Studio**, a local-first desktop workspace for running a team of AI agents in one conversation. Each agent has its own provider, model, role and tools.
