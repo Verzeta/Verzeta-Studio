@@ -44,6 +44,8 @@ class FakeImageServer : public QObject {
     }
     QByteArray requestLine;
     QByteArray authHeader;
+    QByteArray refererHeader;
+    QByteArray titleHeader;
     QJsonObject requestJson;
 
   private:
@@ -64,6 +66,10 @@ class FakeImageServer : public QObject {
                     length = line.mid(15).trimmed().toInt();
                 if (line.toLower().startsWith("authorization:"))
                     authHeader = line.mid(14).trimmed();
+                if (line.toLower().startsWith("http-referer:"))
+                    refererHeader = line.mid(13).trimmed();
+                if (line.toLower().startsWith("x-openrouter-title:"))
+                    titleHeader = line.mid(19).trimmed();
             }
             if (m_buffer.size() < headerEnd + 4 + length)
                 return;
@@ -395,6 +401,8 @@ class TestImageService : public QObject {
         QCOMPARE(ready.count(), 1);
         QCOMPARE(server.requestLine, QByteArray("POST /api/v1/images HTTP/1.1"));
         QCOMPARE(server.authHeader, QByteArray("Bearer sk-test"));
+        QCOMPARE(server.refererHeader, QByteArray("https://verzeta.com"));
+        QCOMPARE(server.titleHeader, QByteArray("Verzeta Studio"));
         QCOMPARE(server.requestJson.value(QStringLiteral("model")).toString(),
                  QStringLiteral("inclusionai/ming-image-0.1-design"));
         QCOMPARE(server.requestJson.value(QStringLiteral("prompt")).toString(),

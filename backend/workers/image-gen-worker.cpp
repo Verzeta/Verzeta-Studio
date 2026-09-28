@@ -12,6 +12,8 @@
 
 #include "image-gen-worker.h"
 
+#include "../utils/app-attribution.h"
+
 #include <QDir>
 #include <QEventLoop>
 #include <QJsonArray>
@@ -1168,6 +1170,10 @@ void ImageGenWorker::generateViaImagesEndpoint(const JobContext& ctx,
     }
     req.setUrl(endpoint);
     req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+    // Name the app in OpenRouter's dashboards, as chat requests do.
+    const QMap<QString, QString> attribution = Verzeta::openRouterAttributionHeaders();
+    for (auto it = attribution.cbegin(); it != attribution.cend(); ++it)
+        req.setRawHeader(it.key().toUtf8(), it.value().toUtf8());
 
     // Only model and prompt are universal; other controls differ per model,
     // so they come only from the provider's extra parameters.

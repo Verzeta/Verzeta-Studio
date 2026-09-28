@@ -18,6 +18,8 @@
 
 #include "openrouter-provider.h"
 
+#include "../utils/app-attribution.h"
+
 OpenRouterProvider::OpenRouterProvider(HttpClient& http, QObject* parent)
     : OpenAIProvider(http, parent) {
     // OpenRouter API root.
@@ -38,11 +40,9 @@ QString OpenRouterProvider::displayName() const {
 
 QMap<QString, QString> OpenRouterProvider::buildHeaders() const {
     auto headers = OpenAIProvider::buildHeaders();
-    // OpenRouter app-attribution headers per their docs. Static strings
-    // — no per-request variability so the user agent is unambiguous in
-    // OpenRouter's dashboard + ranked-routing telemetry.
-    headers[QStringLiteral("HTTP-Referer")] = QStringLiteral("https://verzeta.studio");
-    headers[QStringLiteral("X-Title")] = QStringLiteral("Verzeta Studio");
+    // OpenRouter app-attribution headers, shared with every other request
+    // that goes to OpenRouter (see utils/app-attribution.h).
+    headers.insert(Verzeta::openRouterAttributionHeaders());
     return headers;
 }
 

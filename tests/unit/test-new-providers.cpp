@@ -57,7 +57,8 @@ class TestNewProviders : public QObject {
         const auto headers = p.headersForTest();
         QVERIFY(headers.contains("Authorization"));
         QVERIFY(headers.value("Authorization").contains("sk-test"));
-        QCOMPARE(headers.value("HTTP-Referer"), QStringLiteral("https://verzeta.studio"));
+        QCOMPARE(headers.value("HTTP-Referer"), QStringLiteral("https://verzeta.com"));
+        QCOMPARE(headers.value("X-OpenRouter-Title"), QStringLiteral("Verzeta Studio"));
         QCOMPARE(headers.value("X-Title"), QStringLiteral("Verzeta Studio"));
     }
 
@@ -81,8 +82,8 @@ class TestNewProviders : public QObject {
         HttpClient http;
         ExposedDeepSeek p(http);
         const auto models = p.availableModels();
-        QVERIFY(models.contains(QStringLiteral("deepseek-chat")));
-        QVERIFY(models.contains(QStringLiteral("deepseek-reasoner")));
+        QVERIFY(models.contains(QStringLiteral("deepseek-flash")));
+        QVERIFY(models.contains(QStringLiteral("deepseek-v4-pro")));
     }
 
     void test_DeepSeek_HeadersOnlyAuthorization() {

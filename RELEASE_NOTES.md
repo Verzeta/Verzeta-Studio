@@ -18,6 +18,7 @@ release body. Format follows [Keep a Changelog](https://keepachangelog.com/).
 - The Image Generation and Web Search steps of first-run setup no longer show a stray top bar with a Back button.
 - When an agent is asked to save a file outside the project folder, nothing is written and it asks you first. Before, it quietly saved a renamed copy in the project folder and reported the original location.
 - With write protection on, agents are told why a write was refused, so they stop and ask instead of retrying other commands.
+- OpenRouter's activity log shows every request from Verzeta Studio under its own name and website, including image requests, which appeared as unknown.
 - The skill review window keeps a normal size instead of stretching with the skill's text.
 - Custom tools keep their command after a restart. Before, they silently stopped working.
 - Values passed to custom tools are inserted as plain text and can no longer add commands of their own.
