@@ -16,6 +16,8 @@
 #include "../../utils/logger.h"
 #include "mount-error-hint.h"
 
+#include <QDir>
+#include <QFileInfo>
 #include <QJsonObject>
 
 namespace Tools {
@@ -35,9 +37,10 @@ QList<ToolParameterSchema> WriteFileTool::parameters() const {
     fname.name = QStringLiteral("filename");
     fname.type = QStringLiteral("string");
     fname.description =
-        QStringLiteral("File name relative to the workspace. A relative subpath is kept, "
-                       "so \"drafts/spec.md\" creates the \"drafts\" subfolder; the "
-                       "leading path to the workspace is handled by the service.");
+        QStringLiteral("File name relative to the project folder. A relative subpath is kept, "
+                       "so \"drafts/spec.md\" creates the \"drafts\" subfolder. Files can "
+                       "only be written inside the project folder; a path outside it is "
+                       "refused and nothing is written.");
     fname.required = true;
 
     ToolParameterSchema content;
@@ -79,12 +82,42 @@ QJsonValue WriteFileTool::invoke(const QJsonObject& args) {
         return QJsonObject{{QStringLiteral("error"), msg}};
     }
 
+    // write_file writes only inside the project folder (a registered editor
+    // mount handles its own absolute paths). An absolute path inside the
+    // project is written exactly there; one outside it is refused BEFORE
+    // anything is written, so the agent asks the user instead of saving
+    // somewhere they did not ask for.
+    QString target = filename;
+    const bool mountRoute =
+        !callerFolderId.isEmpty() && m_fileService.isFolderMounted(callerFolderId);
+    // Namespaced names from list_files ("/local/...", "/mount/<client>/...")
+    // look absolute but are routed by FileService; leave them untouched.
+    const QString bare = filename.startsWith(QLatin1Char('/')) ? filename.mid(1) : filename;
+    const bool namespaced =
+        bare.startsWith(QLatin1String("local/")) || bare.startsWith(QLatin1String("mount/"));
+    const QString projectDir = m_fileService.activeProjectDir();
+    if (!mountRoute && !namespaced && !projectDir.isEmpty() && QFileInfo(filename).isAbsolute()) {
+        const QString wanted = QDir::cleanPath(filename);
+        const QString root = QDir::cleanPath(QFileInfo(projectDir).absoluteFilePath());
+        if (wanted.startsWith(root + QLatin1Char('/'))) {
+            target = QDir(root).relativeFilePath(wanted);
+        } else {
+            return QJsonObject{
+                {QStringLiteral("error"),
+                 QStringLiteral("Nothing was written: %1 is outside the project folder, and "
+                                "write_file can only write inside it. Ask the user whether to "
+                                "save it in the project folder instead (for example as '%2').")
+                     .arg(filename, QFileInfo(filename).fileName())},
+                {QStringLiteral("error_kind"), QStringLiteral("outside_project")}};
+        }
+    }
+
     const QString savedPath =
         callerFolderId.isEmpty()
             // Back-compat: 3-arg form preserves the today's-local-write
             // path verbatim. Existing call sites and tests are unaffected.
-            ? m_fileService.saveGeneratedFile(filename, content, m_fileService.activeProjectDir())
-            : m_fileService.saveGeneratedFile(filename,
+            ? m_fileService.saveGeneratedFile(target, content, m_fileService.activeProjectDir())
+            : m_fileService.saveGeneratedFile(target,
                                               content,
                                               m_fileService.activeProjectDir(),
                                               callerFolderId,
@@ -102,7 +135,7 @@ QJsonValue WriteFileTool::invoke(const QJsonObject& args) {
     }
 
     QJsonObject result;
-    result[QStringLiteral("path")] = filename;
+    result[QStringLiteral("path")] = target;
     result[QStringLiteral("written")] = content.length();
     return result;
 }

@@ -181,6 +181,20 @@ QJsonValue RunShellTool::invoke(const QJsonObject& args) {
     result[QStringLiteral("stderr")] = res.stderrOutput;
     result[QStringLiteral("exitCode")] = res.exitCode;
     result[QStringLiteral("timedOut")] = res.timedOut;
+    // A write refused by write protection looks like an ordinary
+    // "Permission denied"; without being told, an agent guesses at
+    // ownership or disk problems and retries. State the rule once.
+    if (res.exitCode != 0 && m_sandbox.writeRestrictionActive()) {
+        result[QStringLiteral("note")] =
+            QStringLiteral("Write protection is on: commands can only create, change or delete "
+                           "files in %1. A write anywhere else is refused by the system with "
+                           "\"Permission denied\", and retrying or using another command will "
+                           "not help. If this command needed to write elsewhere, stop and tell the "
+                           "user: offer to save it inside the project folder instead, or they can "
+                           "allow the folder or turn write protection off in Settings, Execution "
+                           "& Permissions.")
+                .arg(m_sandbox.writableRoots(workingDir).join(QStringLiteral(", ")));
+    }
     return result;
 }
 

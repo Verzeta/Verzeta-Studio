@@ -14,6 +14,7 @@
 #include <QDateTime>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -550,6 +551,92 @@ class TestToolService : public QObject {
                                   .toObject();
         QVERIFY(r.contains(QStringLiteral("error")));
         svc.removeCustomTool(QStringLiteral("wipe"));
+    }
+
+    void test_writeFile_outsideProjectRefused() {
+        QStandardPaths::setTestModeEnabled(true);
+        QTemporaryDir outside;
+        const QString requested = outside.filePath(QStringLiteral("elsewhere.txt"));
+        ToolService svc;
+        ProcessSandbox sandbox;
+        FileService fileSvc;
+        svc.registerBuiltInTools(sandbox, fileSvc);
+        const QStringList before = QDir(fileSvc.activeProjectDir()).entryList(QDir::Files);
+        const QJsonObject r =
+            svc.invokeTool(QStringLiteral("write_file"),
+                           QJsonObject{{QStringLiteral("filename"), requested},
+                                       {QStringLiteral("content"), QStringLiteral("hello")}})
+                .toObject();
+        QCOMPARE(r.value(QStringLiteral("error_kind")).toString(),
+                 QStringLiteral("outside_project"));
+        QVERIFY(r.value(QStringLiteral("error"))
+                    .toString()
+                    .startsWith(QStringLiteral("Nothing was written")));
+        QVERIFY(!QFile::exists(requested));
+        QCOMPARE(QDir(fileSvc.activeProjectDir()).entryList(QDir::Files), before);
+    }
+
+    void test_writeFile_absoluteInsideProjectWrittenInPlace() {
+        QStandardPaths::setTestModeEnabled(true);
+        ToolService svc;
+        ProcessSandbox sandbox;
+        FileService fileSvc;
+        svc.registerBuiltInTools(sandbox, fileSvc);
+        const QString wanted = fileSvc.activeProjectDir() + QStringLiteral("/sub/inplace.txt");
+        const QJsonObject r =
+            svc.invokeTool(QStringLiteral("write_file"),
+                           QJsonObject{{QStringLiteral("filename"), wanted},
+                                       {QStringLiteral("content"), QStringLiteral("hi")}})
+                .toObject();
+        QVERIFY(!r.contains(QStringLiteral("error")));
+        QCOMPARE(r.value(QStringLiteral("path")).toString(), QStringLiteral("sub/inplace.txt"));
+        QVERIFY(QFile::exists(wanted));
+        QFile::remove(wanted);
+    }
+
+    void test_writeFile_namespacedNameNotRefused() {
+        QStandardPaths::setTestModeEnabled(true);
+        ToolService svc;
+        ProcessSandbox sandbox;
+        FileService fileSvc;
+        svc.registerBuiltInTools(sandbox, fileSvc);
+        const QJsonObject r =
+            svc.invokeTool(QStringLiteral("write_file"),
+                           QJsonObject{{QStringLiteral("filename"),
+                                        QStringLiteral("/mount/abc123/src/x.txt")},
+                                       {QStringLiteral("content"), QStringLiteral("hi")}})
+                .toObject();
+        QVERIFY(r.value(QStringLiteral("error_kind")).toString() !=
+                QStringLiteral("outside_project"));
+    }
+
+    void test_runShell_writeProtectionNote() {
+        ToolService svc;
+        ProcessSandbox sandbox;
+        FileService fileSvc;
+        svc.registerBuiltInTools(sandbox, fileSvc);
+        const QJsonObject off =
+            svc.invokeTool(QStringLiteral("run_shell"),
+                           QJsonObject{{QStringLiteral("command"), QStringLiteral("false")}})
+                .toObject();
+        QVERIFY(off.value(QStringLiteral("exitCode")).toInt() != 0);
+        QVERIFY(!off.contains(QStringLiteral("note")));
+
+        sandbox.setWriteRestriction(true, {});
+        if (!sandbox.writeRestrictionActive())
+            QSKIP("Landlock is not available on this system");
+        const QJsonObject failed =
+            svc.invokeTool(QStringLiteral("run_shell"),
+                           QJsonObject{{QStringLiteral("command"), QStringLiteral("false")}})
+                .toObject();
+        QVERIFY(failed.value(QStringLiteral("note"))
+                    .toString()
+                    .contains(QStringLiteral("Write protection is on")));
+        const QJsonObject ok =
+            svc.invokeTool(QStringLiteral("run_shell"),
+                           QJsonObject{{QStringLiteral("command"), QStringLiteral("true")}})
+                .toObject();
+        QVERIFY(!ok.contains(QStringLiteral("note")));
     }
 
     void test_customTool_templatePersists() {

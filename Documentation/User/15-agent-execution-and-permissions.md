@@ -82,7 +82,9 @@ delete files in:
 - folders you add with **Add folder**.
 
 Anything else, such as your home folder or system folders, is refused by the
-operating system and the agent sees a "Permission denied" error. Package
+operating system. The agent is told that write protection caused the refusal
+and that retrying will not help, so it stops and asks you, for example whether
+to save the file in the project folder instead. Package
 caches are moved to a temporary folder so `pip` and `npm` keep working;
 installing packages globally or with `pip install --user` will not, so have
 agents use a virtual environment in the project instead.
