@@ -752,7 +752,7 @@ Rectangle {
             AppRadioButton {
                 id: remoteRadio
                 text: qsTr("Use a remote provider")
-                checked: !SettingsService.ragpLocalEnabled
+                checked: !SettingsService.ragpLocalEnabled || !SettingsService.hasLocalLlama
                 onToggled: if (checked)
                     SettingsService.ragpLocalEnabled = false
             }
@@ -760,7 +760,7 @@ Rectangle {
                 id: localRadio
                 text: SettingsService.hasLocalLlama ? qsTr("Use the on-device model") : qsTr("Use the on-device model (not in this build)")
                 enabled: SettingsService.hasLocalLlama
-                checked: SettingsService.ragpLocalEnabled
+                checked: SettingsService.ragpLocalEnabled && SettingsService.hasLocalLlama
                 onToggled: if (checked)
                     SettingsService.ragpLocalEnabled = true
             }

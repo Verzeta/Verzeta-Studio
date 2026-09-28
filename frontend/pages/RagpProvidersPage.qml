@@ -92,7 +92,8 @@ Rectangle {
                             Controls.Switch {
                                 id: ragpLocalSwitch
                                 text: qsTr("Use local model")
-                                checked: SettingsService.ragpLocalEnabled
+                                enabled: SettingsService.hasLocalLlama
+                                checked: SettingsService.ragpLocalEnabled && SettingsService.hasLocalLlama
                                 onToggled: SettingsService.ragpLocalEnabled = checked
                             }
                             Item {
