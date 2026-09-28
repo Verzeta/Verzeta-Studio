@@ -27,6 +27,16 @@ Rectangle {
             "description": qsTr("Optionally set up two on-device models for " + "private routing and search. Pick a model file " + "you have, or download a recommended one. You " + "can skip this and use your remote providers " + "instead."),
             "kind": "ragp"
         }, {
+            "id": "images",
+            "title": qsTr("Image Generation"),
+            "description": qsTr("Optional. Add an image provider so agents " + "and the Generate Image button can create " + "images. You can skip this and add one later " + "in Settings."),
+            "kind": "images"
+        }, {
+            "id": "websearch",
+            "title": qsTr("Web Search"),
+            "description": qsTr("Optional. Agents search the web with " + "DuckDuckGo by default. Choose another " + "provider here for better results. You can " + "skip this and change it later in Settings."),
+            "kind": "websearch"
+        }, {
             "id": "tour-team",
             "title": qsTr("Tour: Multi-Agent Teams"),
             "description": qsTr("Several agents with their own roles, models, " + "and tools work together in one chat, with " + "per-agent settings, polls, projects, and a " + "full history."),
@@ -114,6 +124,8 @@ Rectangle {
         }]
 
     property int currentStep: 0
+
+    readonly property real _embeddedPageHeight: Math.max(Kirigami.Units.gridUnit * 18, wizard._isMobile ? mobileRail.availableHeight - Kirigami.Units.gridUnit * 5 : desktopRail.availableHeight - 48)
 
     function formatBytes(bytes) {
         if (bytes >= 1000 * 1000 * 1000)
@@ -425,6 +437,7 @@ Rectangle {
         }
 
         Controls.ScrollView {
+            id: desktopRail
             Layout.fillWidth: true
             Layout.fillHeight: true
             contentWidth: availableWidth
@@ -445,6 +458,10 @@ Rectangle {
                             return providersComponent;
                         if (k === "ragp")
                             return ragpComponent;
+                        if (k === "images")
+                            return imagesComponent;
+                        if (k === "websearch")
+                            return webSearchComponent;
                         return tourComponent;
                     }
                 }
@@ -478,6 +495,7 @@ Rectangle {
         }
 
         Controls.ScrollView {
+            id: mobileRail
             Layout.fillWidth: true
             Layout.fillHeight: true
             contentWidth: availableWidth
@@ -507,6 +525,10 @@ Rectangle {
                             return providersComponent;
                         if (k === "ragp")
                             return ragpComponent;
+                        if (k === "images")
+                            return imagesComponent;
+                        if (k === "websearch")
+                            return webSearchComponent;
                         return tourComponent;
                     }
                 }
@@ -1139,6 +1161,22 @@ Rectangle {
                     }
                 }
             }
+        }
+    }
+
+    Component {
+        id: imagesComponent
+        ImageProvidersPage {
+            implicitHeight: wizard._embeddedPageHeight
+            onBack: wizard.currentStep -= 1
+        }
+    }
+
+    Component {
+        id: webSearchComponent
+        SearchProvidersPage {
+            implicitHeight: wizard._embeddedPageHeight
+            onBack: wizard.currentStep -= 1
         }
     }
 

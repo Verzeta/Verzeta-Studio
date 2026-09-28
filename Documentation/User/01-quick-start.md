@@ -72,6 +72,15 @@ Nothing downloads unless you click the button, and no models are ever bundled wi
 
 If you are only using solo chat with a remote provider, skip this step entirely.
 
+### Image generation and web search (optional)
+
+The next two wizard steps show the same pages as Settings:
+
+- **Image Generation**: add an image provider and set it active so agents and the **Generate Image** button can create images.
+- **Web Search**: agents search with DuckDuckGo by default. Pick another provider (and enter its key) for better results, and use **Test** to check it works.
+
+Both can be skipped and changed later in **Settings → Providers → Image Generation** and **Settings → Providers → Web Search**.
+
 ## Step 4: Send your first message
 
 Click **Done** to finish the wizard.
