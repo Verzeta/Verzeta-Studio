@@ -14,6 +14,8 @@ release body. Format follows [Keep a Changelog](https://keepachangelog.com/).
 ### Fixed
 
 - Clearing a provider's optional URL in Settings no longer breaks every request with a protocol error. An empty URL now means the provider's default endpoint.
+- Image generation with OpenRouter works with every OpenRouter image model, including image-only models such as Flux, Seedream and Ming. Choose the new **OpenRouter** image provider type; the Base URL can be left empty.
+- The Image Generation and Web Search steps of first-run setup no longer show a stray top bar with a Back button.
 - The skill review window keeps a normal size instead of stretching with the skill's text.
 - Custom tools keep their command after a restart. Before, they silently stopped working.
 - Values passed to custom tools are inserted as plain text and can no longer add commands of their own.
