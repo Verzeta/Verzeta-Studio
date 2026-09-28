@@ -28,7 +28,7 @@ Item {
         if (!id || id.length === 0)
             return false;
         const row = ImageProviders.byId(id);
-        return !!row && row.endpointShape === "openai_chat_image";
+        return !!row && (row.endpointShape === "openai_chat_image" || row.endpointShape === "openrouter_images");
     }
 
     function _refine(instruction) {

@@ -122,12 +122,15 @@ Add one or more of:
 
 | Provider | What you need |
 | --- | --- |
-| **OpenAI Images** (DALL-E) | Your OpenAI API key. |
-| **OpenAI-compatible chat-image** (OpenRouter) | An API key for the service. |
+| **OpenRouter** | An OpenRouter API key and a model name. Any OpenRouter image model works, for example `black-forest-labs/flux.2-pro`, `bytedance-seed/seedream-5-0-lite` or `google/gemini-2.5-flash-image`. |
+| **OpenAI Images** (DALL-E, gpt-image) | Your OpenAI API key. |
+| **OpenAI-compatible chat with image output** | An API key, the service's base URL and a chat model that returns images. |
 | **Automatic1111 / SD WebUI** | The base URL of your self-hosted Stable Diffusion server. |
 | **Local CLI** | A local Stable Diffusion command-line tool on your machine. |
 
-Set one provider active to use it. Most image models return an image only; a few also return a text caption, so if generation fails with an output-type error, pick the matching **Output** mode in the provider's setup sheet. While an image is being made, the status bar under the message box shows **Generating image** (with a percentage when the provider reports progress). A finished image appears in the chat and is also saved into your project's files under `images/`.
+For **OpenRouter** and **OpenAI Images**, leave **Base URL** empty: the app uses the official endpoint. Enter one only for a proxy. If you paste a full endpoint URL instead of the base, the app corrects it.
+
+Set one provider active to use it. For chat models with image output, most return an image only and a few also return a text caption; if generation fails with an output-type error, pick the matching **Output** mode in the provider's setup sheet. While an image is being made, the status bar under the message box shows **Generating image** (with a percentage when the provider reports progress). A finished image appears in the chat and is also saved into your project's files under `images/`.
 
 For image errors (a wrong base URL, a rejected key, or an image-only model asked for text), see [10-troubleshooting.md](10-troubleshooting.md).
 

@@ -1167,16 +1167,16 @@ Rectangle {
     Component {
         id: imagesComponent
         ImageProvidersPage {
+            embedded: true
             implicitHeight: wizard._embeddedPageHeight
-            onBack: wizard.currentStep -= 1
         }
     }
 
     Component {
         id: webSearchComponent
         SearchProvidersPage {
+            embedded: true
             implicitHeight: wizard._embeddedPageHeight
-            onBack: wizard.currentStep -= 1
         }
     }
 

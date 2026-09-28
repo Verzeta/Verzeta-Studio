@@ -77,6 +77,23 @@ class ImageGenWorker : public QObject {
      */
     static QString joinEndpoint(const QString& baseUrl, const QString& pathSuffix);
 
+    /**
+     * @brief The standard API base for an endpoint type, used when the
+     *        provider's Base URL is left empty.
+     * @param endpointShape The provider's endpoint type.
+     * @returns "https://api.openai.com/v1" for openai_images,
+     *          "https://openrouter.ai/api/v1" for openrouter_images and
+     *          openai_chat_image, empty for the others.
+     */
+    static QString defaultBaseUrl(const QString& endpointShape);
+
+    /**
+     * @brief Whether a Base URL points at OpenRouter.
+     * @param baseUrl The configured Base URL.
+     * @returns true when the host is openrouter.ai or a subdomain of it.
+     */
+    static bool isOpenRouterUrl(const QString& baseUrl);
+
   public slots:
     /**
      * @brief Generates an image via OpenAI DALL-E 3 API.
@@ -186,8 +203,16 @@ class ImageGenWorker : public QObject {
      *   - "a1111"             → POST {baseUrl}/sdapi/v1/txt2img
      *   - "local_cli"         → spawn the CLI at params["sdPath"]
      *   - "openai_chat_image" → POST {baseUrl}/chat/completions with
-     *                           modalities ["image","text"] (OpenRouter
-     *                           and other chat-image providers)
+     *                           modalities ["image","text"] (chat-image
+     *                           providers); when the URL points at
+     *                           OpenRouter it uses POST {baseUrl}/images
+     *                           instead, which serves every OpenRouter
+     *                           image model
+     *   - "openrouter_images" → POST {baseUrl}/images (OpenRouter's image
+     *                           API: {model, prompt}, image in
+     *                           data[0].b64_json)
+     *
+     * An empty Base URL means defaultBaseUrl() for the type.
      *
      * Flexible auth is applied to all HTTP shapes: when
      * params["authQueryParam"] is non-empty the credential is appended
@@ -206,6 +231,21 @@ class ImageGenWorker : public QObject {
      *              echoing @p ctx.
      */
     void generate(const JobContext& ctx, const QString& prompt, const QJsonObject& params);
+
+  private:
+    /**
+     * @brief POST {baseUrl}/images with {model, prompt} (plus
+     *        input_references when refining) and save data[0] as an image
+     *        file with the extension its media_type calls for.
+     * @param ctx     Per-job attribution context (echoed on every emit).
+     * @param prompt  Text description of the desired image.
+     * @param params  Resolved provider config (see generate()).
+     * @param baseUrl The API base, already defaulted.
+     */
+    void generateViaImagesEndpoint(const JobContext& ctx,
+                                   const QString& prompt,
+                                   const QJsonObject& params,
+                                   const QString& baseUrl);
 
   signals:
     /**

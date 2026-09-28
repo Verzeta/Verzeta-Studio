@@ -163,15 +163,11 @@ If you opt out and truncation returns, tick the box again. If you want to experi
 - You ask an agent to generate an image; it replies "the image will appear shortly," but no image ever arrives.
 - Your image provider's own dashboard shows no request.
 
-**Most common cause: the Base URL includes the endpoint path**
+**Check the provider type and Base URL**
 
-The **Base URL** field for an HTTP image provider expects the API *base*, for example:
+For **OpenRouter** and **OpenAI Images**, leave **Base URL** empty; the app uses the official endpoint. For other HTTP providers, enter the API *base*, for example `https://my-server.example/v1`. Verzeta adds the endpoint path itself (`/images` for OpenRouter, `/images/generations` for OpenAI-style, `/chat/completions` for chat models with image output, `/sdapi/v1/txt2img` for Automatic1111). If you paste a full endpoint URL instead, it is corrected.
 
-```
-https://openrouter.ai/api/v1
-```
-
-Verzeta appends the endpoint path itself (`/chat/completions` for OpenRouter-style chat-image providers, `/images/generations` for OpenAI-style, `/sdapi/v1/txt2img` for Automatic1111). Pasting the full documented endpoint, such as `https://openrouter.ai/api/v1/chat/completions`, also works.
+Use the **OpenRouter** type for OpenRouter. It works with every OpenRouter image model, including image-only models such as Flux, Seedream and Ming, which OpenRouter does not serve through its chat endpoint.
 
 **Failures are shown in the chat**
 
@@ -185,13 +181,13 @@ Most dedicated image-generation models (e.g. Flux, grok-imagine) output **only a
 
 **Editing a generated image**
 
-Click a generated image to open the preview. When your active provider is a chat-image provider (one whose model accepts a reference image), the preview shows **AI refine** controls: type an instruction ("make it night", "add a hat") and press **Refine**, or use a preset such as **Variation**. The edited image is sent back to the provider and arrives as a new image in the chat, so you can iterate. Refine is hidden for providers that don't accept image input (e.g. DALL-E images, Automatic1111).
+Click a generated image to open the preview. When your active provider is an OpenRouter or chat-image provider (one whose model accepts a reference image), the preview shows **AI refine** controls: type an instruction ("make it night", "add a hat") and press **Refine**, or use a preset such as **Variation**. The edited image is sent back to the provider and arrives as a new image in the chat, so you can iterate. Refine is hidden for providers that don't accept image input (e.g. DALL-E images, Automatic1111).
 
 **Checklist**
 
-1. **Base URL** is the API base (the in-app field help shows the expected value); a full endpoint URL is also accepted.
-2. **Model** is an image-generation model (e.g. `google/gemini-2.5-flash-image-preview`, `black-forest-labs/flux.2-pro`, `x-ai/grok-imagine-image-quality`).
-3. **Output** matches the model: "Image only" for image-only models, "Image + text" for dual-output models.
+1. **Base URL** is empty for OpenRouter and OpenAI Images, or the API base for other providers (the in-app field help shows the expected value).
+2. **Model** is an image model, for example `black-forest-labs/flux.2-pro` or `google/gemini-2.5-flash-image` on OpenRouter.
+3. For chat models with image output, **Output** matches the model: "Image only" for image-only models, "Image + text" for dual-output models.
 4. **API key** is present and valid; the **Send credential in** selector matches what the provider expects (header, URL query parameter, or request body).
 5. The provider is **set active** in **Settings → Providers → Image Generation**.
 

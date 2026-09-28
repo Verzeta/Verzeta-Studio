@@ -42,6 +42,13 @@ ImageGenWorker::ImageGenWorker(QObject* parent) : QObject(parent) {}
 
 QString ImageGenWorker::joinEndpoint(const QString& baseUrl, const QString& pathSuffix) {
     QString base = baseUrl.trimmed();
+    // Collapse doubled slashes in the path ("openrouter.ai//api/v1/")
+    // without touching the "://" after the scheme.
+    const int schemeEnd = base.indexOf(QStringLiteral("://"));
+    const int pathStart = schemeEnd < 0 ? 0 : schemeEnd + 3;
+    while (base.indexOf(QStringLiteral("//"), pathStart) >= 0) {
+        base.replace(base.indexOf(QStringLiteral("//"), pathStart), 2, QStringLiteral("/"));
+    }
     while (base.endsWith(QLatin1Char('/')))
         base.chop(1);
     if (base.isEmpty()) {
@@ -56,7 +63,38 @@ QString ImageGenWorker::joinEndpoint(const QString& baseUrl, const QString& path
     if (base.endsWith(pathSuffix, Qt::CaseInsensitive)) {
         return base;
     }
+    // A pasted URL ending in a DIFFERENT known endpoint (for example
+    // ".../images" while this request needs "/chat/completions") is cut
+    // back to the API base first, so the result is never ".../images/
+    // chat/completions".
+    static const char* const kKnownEndpoints[] = {
+        "/chat/completions",
+        "/images/generations",
+        "/images",
+        "/sdapi/v1/txt2img",
+    };
+    for (const char* known : kKnownEndpoints) {
+        const QString k = QString::fromLatin1(known);
+        if (base.endsWith(k, Qt::CaseInsensitive)) {
+            base.chop(k.size());
+            break;
+        }
+    }
     return base + pathSuffix;
+}
+
+QString ImageGenWorker::defaultBaseUrl(const QString& endpointShape) {
+    if (endpointShape == QStringLiteral("openai_images"))
+        return QStringLiteral("https://api.openai.com/v1");
+    if (endpointShape == QStringLiteral("openrouter_images") ||
+        endpointShape == QStringLiteral("openai_chat_image"))
+        return QStringLiteral("https://openrouter.ai/api/v1");
+    return {};
+}
+
+bool ImageGenWorker::isOpenRouterUrl(const QString& baseUrl) {
+    const QString host = QUrl(baseUrl.trimmed()).host().toLower();
+    return host == QLatin1String("openrouter.ai") || host.endsWith(QLatin1String(".openrouter.ai"));
 }
 
 // ---------------------------------------------------------------------------
@@ -260,15 +298,16 @@ void ImageGenWorker::generateViaLocalSD(const JobContext& ctx,
 
 namespace {
 
-/** Save raw bytes to AppDataLocation/attachments/\<uuid\>.png and return
- *  the absolute path. Empty return on failure (caller emits error). */
-QString saveImageBytes(const QByteArray& bytes) {
+/** Save raw bytes to AppDataLocation/attachments/\<uuid\>.\<ext\> (png by
+ *  default) and return the absolute path. Empty return on failure (caller
+ *  emits error). */
+QString saveImageBytes(const QByteArray& bytes, const QString& ext = QStringLiteral("png")) {
     const QString attachDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) +
                               QStringLiteral("/attachments");
     QDir().mkpath(attachDir);
 
     const QString uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
-    const QString savePath = attachDir + QStringLiteral("/") + uuid + QStringLiteral(".png");
+    const QString savePath = attachDir + QStringLiteral("/") + uuid + QLatin1Char('.') + ext;
 
     QFile f(savePath);
     if (!f.open(QIODevice::WriteOnly))
@@ -733,8 +772,19 @@ void ImageGenWorker::generate(const JobContext& ctx,
         return;
     }
 
-    if (baseUrl.isEmpty()) {
+    // An empty URL means the provider's standard endpoint.
+    const QString effectiveBase = baseUrl.trimmed().isEmpty() ? defaultBaseUrl(shape) : baseUrl;
+    if (effectiveBase.isEmpty()) {
         emit errorOccurred(ctx, QStringLiteral("Image provider base URL is empty."));
+        return;
+    }
+
+    // OpenRouter serves every image model through POST /images, and its
+    // chat endpoint refuses image-only models, so a chat-image provider
+    // pointed at OpenRouter uses /images too.
+    if (shape == QStringLiteral("openrouter_images") ||
+        (shape == QStringLiteral("openai_chat_image") && isOpenRouterUrl(effectiveBase))) {
+        generateViaImagesEndpoint(ctx, prompt, params, effectiveBase);
         return;
     }
 
@@ -746,7 +796,7 @@ void ImageGenWorker::generate(const JobContext& ctx,
     if (shape == QStringLiteral("a1111")) {
         QNetworkRequest req;
         const QUrl endpoint = buildEndpointWithAuth(req,
-                                                    baseUrl,
+                                                    effectiveBase,
                                                     QStringLiteral("/sdapi/v1/txt2img"),
                                                     apiKey,
                                                     authLocation,
@@ -754,7 +804,7 @@ void ImageGenWorker::generate(const JobContext& ctx,
                                                     authValuePrefix,
                                                     authQueryParam);
         if (!endpoint.isValid()) {
-            emit errorOccurred(ctx, QStringLiteral("Invalid server URL: ") + baseUrl);
+            emit errorOccurred(ctx, QStringLiteral("Invalid server URL: ") + effectiveBase);
             return;
         }
         req.setUrl(endpoint);
@@ -824,7 +874,7 @@ void ImageGenWorker::generate(const JobContext& ctx,
     if (shape == QStringLiteral("openai_chat_image")) {
         QNetworkRequest req;
         const QUrl endpoint = buildEndpointWithAuth(req,
-                                                    baseUrl,
+                                                    effectiveBase,
                                                     QStringLiteral("/chat/completions"),
                                                     apiKey,
                                                     authLocation,
@@ -832,7 +882,7 @@ void ImageGenWorker::generate(const JobContext& ctx,
                                                     authValuePrefix,
                                                     authQueryParam);
         if (!endpoint.isValid()) {
-            emit errorOccurred(ctx, QStringLiteral("Invalid server URL: ") + baseUrl);
+            emit errorOccurred(ctx, QStringLiteral("Invalid server URL: ") + effectiveBase);
             return;
         }
         req.setUrl(endpoint);
@@ -982,7 +1032,7 @@ void ImageGenWorker::generate(const JobContext& ctx,
     {
         QNetworkRequest req;
         const QUrl endpoint = buildEndpointWithAuth(req,
-                                                    baseUrl,
+                                                    effectiveBase,
                                                     QStringLiteral("/images/generations"),
                                                     apiKey,
                                                     authLocation,
@@ -990,7 +1040,7 @@ void ImageGenWorker::generate(const JobContext& ctx,
                                                     authValuePrefix,
                                                     authQueryParam);
         if (!endpoint.isValid()) {
-            emit errorOccurred(ctx, QStringLiteral("Invalid server URL: ") + baseUrl);
+            emit errorOccurred(ctx, QStringLiteral("Invalid server URL: ") + effectiveBase);
             return;
         }
         req.setUrl(endpoint);
@@ -1085,4 +1135,132 @@ void ImageGenWorker::generate(const JobContext& ctx,
         emit progressUpdate(ctx, 100);
         emit imageReady(ctx, savePath);
     }
+}
+
+void ImageGenWorker::generateViaImagesEndpoint(const JobContext& ctx,
+                                               const QString& prompt,
+                                               const QJsonObject& params,
+                                               const QString& baseUrl) {
+    const QString model = params.value(QStringLiteral("model")).toString();
+    const QString apiKey = params.value(QStringLiteral("apiKey")).toString();
+    const QString authLocation = params.value(QStringLiteral("authLocation")).toString();
+    const QString sourceImagePath = params.value(QStringLiteral("sourceImagePath")).toString();
+    if (model.isEmpty()) {
+        emit errorOccurred(ctx,
+                           QStringLiteral("OpenRouter: no image model is set for this provider."));
+        return;
+    }
+
+    QNetworkAccessManager nam;
+    QNetworkRequest req;
+    const QUrl endpoint =
+        buildEndpointWithAuth(req,
+                              baseUrl,
+                              QStringLiteral("/images"),
+                              apiKey,
+                              authLocation,
+                              params.value(QStringLiteral("authHeaderName")).toString(),
+                              params.value(QStringLiteral("authValuePrefix")).toString(),
+                              params.value(QStringLiteral("authQueryParam")).toString());
+    if (!endpoint.isValid()) {
+        emit errorOccurred(ctx, QStringLiteral("Invalid server URL: ") + baseUrl);
+        return;
+    }
+    req.setUrl(endpoint);
+    req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+
+    // Only model and prompt are universal; other controls differ per model,
+    // so they come only from the provider's extra parameters.
+    QJsonObject payload = params.value(QStringLiteral("extraParams")).toObject();
+    payload[QStringLiteral("model")] = model;
+    payload[QStringLiteral("prompt")] = prompt;
+    if (!sourceImagePath.isEmpty()) {
+        const QString dataUrl = fileToDataUrl(sourceImagePath);
+        if (dataUrl.isEmpty()) {
+            emit errorOccurred(ctx, QStringLiteral("Refine: could not read the source image."));
+            return;
+        }
+        QJsonObject ref;
+        ref[QStringLiteral("type")] = QStringLiteral("image_url");
+        ref[QStringLiteral("image_url")] = QJsonObject{{QStringLiteral("url"), dataUrl}};
+        payload[QStringLiteral("input_references")] = QJsonArray{ref};
+    }
+    injectBodyAuth(
+        payload, authLocation, params.value(QStringLiteral("authBodyField")).toString(), apiKey);
+
+    emit progressUpdate(ctx, 10);
+    QEventLoop loop;
+    QNetworkReply* reply = nam.post(req, QJsonDocument(payload).toJson(QJsonDocument::Compact));
+    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+    const QByteArray body = reply->readAll();
+    if (reply->error() != QNetworkReply::NoError) {
+        QString detail = reply->errorString();
+        const QString apiErr = QJsonDocument::fromJson(body)
+                                   .object()
+                                   .value(QStringLiteral("error"))
+                                   .toObject()
+                                   .value(QStringLiteral("message"))
+                                   .toString();
+        if (!apiErr.isEmpty())
+            detail = apiErr;
+        reply->deleteLater();
+        emit errorOccurred(ctx, QStringLiteral("OpenRouter: ") + detail);
+        return;
+    }
+    reply->deleteLater();
+
+    const QJsonObject root = QJsonDocument::fromJson(body).object();
+    const QJsonArray data = root.value(QStringLiteral("data")).toArray();
+    if (data.isEmpty()) {
+        const QString apiErr = root.value(QStringLiteral("error"))
+                                   .toObject()
+                                   .value(QStringLiteral("message"))
+                                   .toString();
+        emit errorOccurred(
+            ctx,
+            QStringLiteral("OpenRouter: ") +
+                (apiErr.isEmpty() ? QStringLiteral("the response contained no image.") : apiErr));
+        return;
+    }
+    emit progressUpdate(ctx, 70);
+
+    const QJsonObject first = data.first().toObject();
+    QByteArray imageBytes;
+    const QString b64 = first.value(QStringLiteral("b64_json")).toString();
+    if (!b64.isEmpty()) {
+        imageBytes = decodeImagePayload(b64);
+    } else if (const QString url = first.value(QStringLiteral("url")).toString(); !url.isEmpty()) {
+        QEventLoop dlLoop;
+        QNetworkReply* dl = nam.get(QNetworkRequest(QUrl(url)));
+        QObject::connect(dl, &QNetworkReply::finished, &dlLoop, &QEventLoop::quit);
+        dlLoop.exec();
+        if (dl->error() == QNetworkReply::NoError)
+            imageBytes = dl->readAll();
+        dl->deleteLater();
+    }
+    if (imageBytes.isEmpty()) {
+        emit errorOccurred(
+            ctx, QStringLiteral("OpenRouter: the image in the response could not be read."));
+        return;
+    }
+
+    // Models return PNG, JPEG, WebP or SVG; keep the right extension so the
+    // file opens correctly.
+    const QString mediaType = first.value(QStringLiteral("media_type")).toString().toLower();
+    QString ext = QStringLiteral("png");
+    if (mediaType == QLatin1String("image/jpeg") || mediaType == QLatin1String("image/jpg"))
+        ext = QStringLiteral("jpg");
+    else if (mediaType == QLatin1String("image/webp"))
+        ext = QStringLiteral("webp");
+    else if (mediaType.startsWith(QLatin1String("image/svg")))
+        ext = QStringLiteral("svg");
+
+    const QString savePath = saveImageBytes(imageBytes, ext);
+    if (savePath.isEmpty()) {
+        emit errorOccurred(ctx, QStringLiteral("OpenRouter: cannot write the image to disk."));
+        return;
+    }
+    emit progressUpdate(ctx, 100);
+    emit imageReady(ctx, savePath);
 }

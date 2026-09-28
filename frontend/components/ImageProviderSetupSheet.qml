@@ -21,7 +21,10 @@ AppOverlayDialog {
             "label": qsTr("OpenAI Images (DALL·E / gpt-image)"),
             "value": "openai_images"
         }, {
-            "label": qsTr("OpenAI-compatible chat-image (OpenRouter)"),
+            "label": qsTr("OpenRouter"),
+            "value": "openrouter_images"
+        }, {
+            "label": qsTr("OpenAI-compatible chat with image output"),
             "value": "openai_chat_image"
         }, {
             "label": qsTr("Automatic1111 / SD WebUI"),
@@ -45,7 +48,11 @@ AppOverlayDialog {
         return endpointTypes[idx].value;
     }
     function isHttpShape(shape) {
-        return shape === "openai_images" || shape === "openai_chat_image" || shape === "a1111";
+        return shape === "openai_images" || shape === "openrouter_images" || shape === "openai_chat_image" || shape === "a1111";
+    }
+
+    function hasDefaultUrl(shape) {
+        return shape === "openai_images" || shape === "openrouter_images" || shape === "openai_chat_image";
     }
 
     function openForAdd() {
@@ -99,7 +106,7 @@ AppOverlayDialog {
             sheet.saveError = qsTr("Display name is required.");
             return;
         }
-        if (isHttpShape(shape) && urlField.text.trim().length === 0) {
+        if (isHttpShape(shape) && !hasDefaultUrl(shape) && urlField.text.trim().length === 0) {
             sheet.saveError = qsTr("Base URL is required for this endpoint type.");
             return;
         }
@@ -107,8 +114,8 @@ AppOverlayDialog {
             sheet.saveError = qsTr("Executable path is required for Local CLI.");
             return;
         }
-        if (shape === "openai_chat_image" && modelField.text.trim().length === 0) {
-            sheet.saveError = qsTr("Model is required for chat-image providers (e.g. google/gemini-2.5-flash-image-preview).");
+        if ((shape === "openai_chat_image" || shape === "openrouter_images") && modelField.text.trim().length === 0) {
+            sheet.saveError = qsTr("Model is required for this endpoint type (e.g. black-forest-labs/flux.2-pro).");
             return;
         }
         var m = {};
@@ -199,8 +206,10 @@ AppOverlayDialog {
                 switch (sheet.currentShape()) {
                 case "openai_images":
                     return qsTr("POSTs to <base URL>/images/generations. Works with OpenAI and any server speaking the OpenAI Images API.");
+                case "openrouter_images":
+                    return qsTr("Uses OpenRouter's image API (<base URL>/images). Works with every OpenRouter image model, including Flux, Seedream, Gemini and GPT image models.");
                 case "openai_chat_image":
-                    return qsTr("POSTs to <base URL>/chat/completions with image output enabled. Use for OpenRouter image models (e.g. Gemini image).");
+                    return qsTr("POSTs to <base URL>/chat/completions with image output enabled, for services that return images from a chat model. An OpenRouter URL uses OpenRouter's image API instead.");
                 case "a1111":
                     return qsTr("POSTs to <base URL>/sdapi/v1/txt2img. Works with Automatic1111, vladmandic/automatic, and forks.");
                 case "local_cli":
@@ -220,7 +229,7 @@ AppOverlayDialog {
             Layout.fillWidth: true
 
             Controls.Label {
-                text: qsTr("Base URL (Required)")
+                text: sheet.hasDefaultUrl(sheet.currentShape()) ? qsTr("Base URL (optional)") : qsTr("Base URL (Required)")
                 font.bold: true
                 font.pointSize: Kirigami.Theme.defaultFont.pointSize * 0.9
                 color: Kirigami.Theme.disabledTextColor
@@ -232,6 +241,8 @@ AppOverlayDialog {
                     switch (sheet.currentShape()) {
                     case "openai_images":
                         return "https://api.openai.com/v1";
+                    case "openrouter_images":
+                        return "https://openrouter.ai/api/v1";
                     case "openai_chat_image":
                         return "https://openrouter.ai/api/v1";
                     case "a1111":
@@ -244,9 +255,11 @@ AppOverlayDialog {
                 text: {
                     switch (sheet.currentShape()) {
                     case "openai_images":
-                        return qsTr("Enter the API base only (e.g. https://api.openai.com/v1). The app appends /images/generations. Pasting the full endpoint also works.");
+                        return qsTr("Leave empty to use https://api.openai.com/v1. For another server, enter its API base; the app adds /images/generations.");
+                    case "openrouter_images":
+                        return qsTr("Leave empty to use https://openrouter.ai/api/v1. Only change it if you use a proxy in front of OpenRouter.");
                     case "openai_chat_image":
-                        return qsTr("Enter the API base only (e.g. https://openrouter.ai/api/v1). The app appends /chat/completions automatically. Pasting the full endpoint URL also works.");
+                        return qsTr("Leave empty to use https://openrouter.ai/api/v1. For another service, enter its API base; the app adds /chat/completions.");
                     case "a1111":
                         return qsTr("Enter the server base (e.g. http://192.168.0.10:7860). The app appends /sdapi/v1/txt2img automatically.");
                     }
@@ -274,15 +287,17 @@ AppOverlayDialog {
                     switch (sheet.currentShape()) {
                     case "openai_images":
                         return "dall-e-3 / gpt-image-1";
+                    case "openrouter_images":
+                        return "black-forest-labs/flux.2-pro";
                     case "openai_chat_image":
-                        return "google/gemini-2.5-flash-image-preview";
+                        return "google/gemini-2.5-flash-image";
                     }
                     return qsTr("(model id)");
                 }
             }
             Controls.Label {
-                text: qsTr("Use an image-generation model, e.g. google/gemini-2.5-flash-image-preview, black-forest-labs/flux.2-pro, or x-ai/grok-imagine-image-quality.")
-                visible: sheet.currentShape() === "openai_chat_image"
+                text: sheet.currentShape() === "openrouter_images" ? qsTr("Any OpenRouter image model, e.g. black-forest-labs/flux.2-pro, bytedance-seed/seedream-5-0-lite, inclusionai/ming-image-0.1-design or google/gemini-2.5-flash-image. The full list is on openrouter.ai/models with the image output filter.") : qsTr("A chat model that returns images, e.g. google/gemini-2.5-flash-image.")
+                visible: sheet.currentShape() === "openai_chat_image" || sheet.currentShape() === "openrouter_images"
                 wrapMode: Text.WordWrap
                 color: Kirigami.Theme.disabledTextColor
                 font.pointSize: Kirigami.Theme.defaultFont.pointSize * 0.85

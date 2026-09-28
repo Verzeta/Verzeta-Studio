@@ -50,7 +50,7 @@ struct ImageGenConfig {
     QString endpointShape;
     ///< Registry-driven dispatch selector, one of
     ///< "openai_images" | "a1111" | "local_cli" |
-    ///< "openai_chat_image". When non-empty this takes priority
+    ///< "openai_chat_image" / "openrouter_images". When non-empty this takes priority
     ///< over `backend` and drives the unified worker dispatch.
     QString baseUrl;
     ///< Base URL for the HTTP endpoint shapes. The worker appends

@@ -85,7 +85,7 @@ struct ActiveImageConfig {
     QString id;           ///< Provider id (slug).
     QString displayName;  ///< Name shown in the UI.
     /// Request format: "openai_images", "a1111", "local_cli" or
-    /// "openai_chat_image".
+    /// "openai_chat_image" / "openrouter_images".
     QString endpointShape;
     QString baseUrl;           ///< Server base URL; unused by "local_cli".
     QString model;             ///< Model name sent with the request.

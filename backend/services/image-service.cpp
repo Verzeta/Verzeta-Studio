@@ -174,8 +174,10 @@ void ImageService::generateImage(const QString& convId,
                 return;
             }
         } else if (shape == QStringLiteral("openai_images") || shape == QStringLiteral("a1111") ||
-                   shape == QStringLiteral("openai_chat_image")) {
-            if (base.isEmpty()) {
+                   shape == QStringLiteral("openai_chat_image") ||
+                   shape == QStringLiteral("openrouter_images")) {
+            // Types with a standard endpoint use it when the URL is empty.
+            if (base.trimmed().isEmpty() && ImageGenWorker::defaultBaseUrl(shape).isEmpty()) {
                 emitGenerationError(convId,
                                     ctx.jobId,
                                     QStringLiteral("Image provider base URL is not "
@@ -421,16 +423,17 @@ void ImageService::refineImage(const QString& convId,
         return;
     }
     // Editing an existing image requires sending it back as a reference;
-    // only the chat-image shape carries image input. Other shapes
-    // (DALL-E images, A1111, local CLI) can't refine in this flow.
-    if (active.endpointShape != QStringLiteral("openai_chat_image")) {
+    // only the chat-image and OpenRouter shapes carry image input. Other
+    // shapes (DALL-E images, A1111, local CLI) can't refine in this flow.
+    if (active.endpointShape != QStringLiteral("openai_chat_image") &&
+        active.endpointShape != QStringLiteral("openrouter_images")) {
         markStarted(convId);
         emitGenerationError(convId,
                             QString(),
-                            QStringLiteral("Refine works only with a chat-image "
-                                           "provider (one that accepts a reference "
-                                           "image). Set one active in Settings -> "
-                                           "Image Generation."),
+                            QStringLiteral("Refine works only with an OpenRouter or "
+                                           "chat-image provider (one that accepts a "
+                                           "reference image). Set one active in "
+                                           "Settings -> Image Generation."),
                             /*synchronous=*/true);
         return;
     }
@@ -647,8 +650,12 @@ void ImageService::onImageReady(const JobContext& ctx, const QString& localPath)
                 slug.chop(1);
             if (slug.isEmpty())
                 slug = QStringLiteral("image");
+            // Keep the format the provider returned (png, jpg, webp, svg).
+            const QString ext = QFileInfo(localPath).suffix().isEmpty()
+                                    ? QStringLiteral("png")
+                                    : QFileInfo(localPath).suffix();
             const QString name =
-                slug + QStringLiteral("-") + ctx.jobId.left(8) + QStringLiteral(".png");
+                slug + QStringLiteral("-") + ctx.jobId.left(8) + QLatin1Char('.') + ext;
             const QString dest = imagesDir + QStringLiteral("/") + name;
             if (QFile::copy(localPath, dest)) {
                 workspaceRelPath = QStringLiteral("images/") + name;
@@ -717,7 +724,7 @@ void ImageService::onImageReady(const JobContext& ctx, const QString& localPath)
             att.messageId = msgId;
             att.type = QStringLiteral("image");
             att.filename = fi.fileName();
-            att.mimeType = QStringLiteral("image/png");
+            att.mimeType = m_fileService.mimeType(localPath);
             att.dataPath = localPath;  // absolute path; QML prefixes file://
             att.createdAt = QDateTime::currentDateTime();
 

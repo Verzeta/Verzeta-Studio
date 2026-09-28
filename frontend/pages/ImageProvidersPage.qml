@@ -8,16 +8,20 @@ import org.verzeta.studio 1.0
 
 Rectangle {
     id: page
-    color: ThemeController.surfacePage
+    color: page.embedded ? "transparent" : ThemeController.surfacePage
 
     signal back
+
+    property bool embedded: false
 
     function shapeLabel(shape) {
         switch (shape) {
         case "openai_images":
             return qsTr("OpenAI Images");
+        case "openrouter_images":
+            return qsTr("OpenRouter");
         case "openai_chat_image":
-            return qsTr("OpenAI-compatible chat-image (OpenRouter)");
+            return qsTr("OpenAI-compatible chat with image output");
         case "a1111":
             return qsTr("Automatic1111 / SD WebUI");
         case "local_cli":
@@ -45,6 +49,7 @@ Rectangle {
         spacing: 0
 
         Rectangle {
+            visible: !page.embedded
             Layout.fillWidth: true
             implicitHeight: 48
             color: ThemeController.surfaceCard
@@ -74,6 +79,7 @@ Rectangle {
         }
         Kirigami.Separator {
             Layout.fillWidth: true
+            visible: !page.embedded
         }
 
         Controls.ScrollView {
@@ -157,7 +163,7 @@ Rectangle {
                             Layout.alignment: Qt.AlignHCenter
                         }
                         Controls.Label {
-                            text: qsTr("Add an OpenAI Images provider, an OpenRouter chat-image provider, an Automatic1111 server, or a local Stable Diffusion CLI.")
+                            text: qsTr("Add an OpenAI Images provider, an OpenRouter provider, an Automatic1111 server, or a local Stable Diffusion CLI.")
                             wrapMode: Text.WordWrap
                             horizontalAlignment: Text.AlignHCenter
                             color: Kirigami.Theme.disabledTextColor
@@ -243,7 +249,7 @@ Rectangle {
                                         Layout.fillWidth: true
                                     }
                                     Controls.Label {
-                                        text: modelData.endpointShape === "local_cli" ? modelData.sdPath : (modelData.baseUrl + (modelData.model && modelData.model.length > 0 ? "  •  " + modelData.model : ""))
+                                        text: modelData.endpointShape === "local_cli" ? modelData.sdPath : ((modelData.baseUrl || qsTr("default endpoint")) + (modelData.model && modelData.model.length > 0 ? "  •  " + modelData.model : ""))
                                         color: Kirigami.Theme.disabledTextColor
                                         font.pointSize: Kirigami.Theme.defaultFont.pointSize * 0.85
                                         elide: Text.ElideMiddle
@@ -286,6 +292,13 @@ Rectangle {
                             }
                         }
                     }
+                }
+
+                AppButton {
+                    visible: page.embedded && ImageProviders.providers.length > 0
+                    text: qsTr("Add Image Provider")
+                    icon.name: "list-add"
+                    onClicked: setupSheet.openForAdd()
                 }
 
                 Item {

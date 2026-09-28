@@ -8,9 +8,11 @@ import org.verzeta.studio 1.0
 
 Rectangle {
     id: page
-    color: ThemeController.surfacePage
+    color: page.embedded ? "transparent" : ThemeController.surfacePage
 
     signal back
+
+    property bool embedded: false
 
     property int refreshTick: 0
     property var providerList: []
@@ -40,6 +42,7 @@ Rectangle {
         spacing: 0
 
         Rectangle {
+            visible: !page.embedded
             Layout.fillWidth: true
             implicitHeight: 48
             color: ThemeController.surfaceCard
@@ -63,6 +66,7 @@ Rectangle {
         }
         Kirigami.Separator {
             Layout.fillWidth: true
+            visible: !page.embedded
         }
 
         Controls.ScrollView {

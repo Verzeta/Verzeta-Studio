@@ -228,7 +228,8 @@ QString ImageProviderRegistry::keyIdFor(const QString& id) const {
 
 bool ImageProviderRegistry::isValidEndpointShape(const QString& shape) {
     return shape == QStringLiteral("openai_images") || shape == QStringLiteral("a1111") ||
-           shape == QStringLiteral("local_cli") || shape == QStringLiteral("openai_chat_image");
+           shape == QStringLiteral("local_cli") || shape == QStringLiteral("openai_chat_image") ||
+           shape == QStringLiteral("openrouter_images");
 }
 
 bool ImageProviderRegistry::isValidSlug(const QString& slug) {
