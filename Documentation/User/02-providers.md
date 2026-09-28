@@ -127,7 +127,7 @@ Add one or more of:
 | **Automatic1111 / SD WebUI** | The base URL of your self-hosted Stable Diffusion server. |
 | **Local CLI** | A local Stable Diffusion command-line tool on your machine. |
 
-Set one provider active to use it. Most image models return an image only; a few also return a text caption, so if generation fails with an output-type error, pick the matching **Output** mode in the provider's setup sheet. A finished image appears in the chat and is also saved into your project's files under `images/`.
+Set one provider active to use it. Most image models return an image only; a few also return a text caption, so if generation fails with an output-type error, pick the matching **Output** mode in the provider's setup sheet. While an image is being made, the status bar under the message box shows **Generating image** (with a percentage when the provider reports progress). A finished image appears in the chat and is also saved into your project's files under `images/`.
 
 For image errors (a wrong base URL, a rejected key, or an image-only model asked for text), see [10-troubleshooting.md](10-troubleshooting.md).
 

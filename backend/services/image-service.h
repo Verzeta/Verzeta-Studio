@@ -18,7 +18,9 @@
 #include <QThread>
 
 #include <functional>
+#include <QHash>
 #include <QJsonObject>
+#include <QMap>
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -326,6 +328,17 @@ class ImageService : public QObject {
      */
     Q_INVOKABLE QStringList conversationImages(const QString& convId) const;
 
+    /**
+     * @brief Number of image generations still running for a conversation.
+     *
+     * A job counts from generationStarted() until its imageGenerated() or
+     * error(), so the chat can show that an image is on its way.
+     *
+     * @param convId Conversation UUID.
+     * @returns The number of unfinished jobs; 0 for an unknown conversation.
+     */
+    Q_INVOKABLE int pendingGenerations(const QString& convId) const;
+
   signals:
     // -----------------------------------------------------------------------
     // Progress / result signals
@@ -380,6 +393,14 @@ class ImageService : public QObject {
      * @param message Human-readable error description.
      */
     void error(const QString& convId, const QString& message);
+
+    /**
+     * @brief Emitted whenever pendingGenerations() changes for a
+     *        conversation.
+     * @param convId Conversation UUID.
+     * @param count  The new number of unfinished jobs.
+     */
+    void pendingGenerationsChanged(const QString& convId, int count);
 
     // Internal cross-thread signals (invokeMethod targets on the
     // worker thread). Every signal threads a JobContext that the
@@ -550,4 +571,19 @@ class ImageService : public QObject {
     // Written from onImageReady's ctx.conversationId, NOT from a
     // mutable active-conv field.
     QMap<QString, QStringList> m_conversationImages;
+
+    // Unfinished generation jobs per conversation (see pendingGenerations).
+    QHash<QString, int> m_pendingByConv;
+
+    /**
+     * @brief Counts a job as started and emits generationStarted().
+     * @param convId Conversation UUID.
+     */
+    void markStarted(const QString& convId);
+
+    /**
+     * @brief Counts a job as finished (image or error).
+     * @param convId Conversation UUID.
+     */
+    void markFinished(const QString& convId);
 };

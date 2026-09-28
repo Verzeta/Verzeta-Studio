@@ -153,7 +153,7 @@ void ImageService::generateImage(const QString& convId,
                                  const QString& prompt,
                                  const ImageGenConfig& config) {
     const JobContext ctx = JobContext::makeNew(convId, prompt);
-    emit generationStarted(convId);
+    markStarted(convId);
 
     // Registry-driven shape dispatch takes priority. When endpointShape
     // is set the unified worker path handles every shape (including the
@@ -347,7 +347,7 @@ void ImageService::generateImageFromActiveProvider(const QString& convId,
                                                    const QString& prompt,
                                                    const QVariantMap& overrides) {
     if (!m_providerRegistry) {
-        emit generationStarted(convId);
+        markStarted(convId);
         emitGenerationError(convId,
                             QString(),
                             QStringLiteral("Image generation is unavailable in "
@@ -358,7 +358,7 @@ void ImageService::generateImageFromActiveProvider(const QString& convId,
 
     const ActiveImageConfig active = m_providerRegistry->activeConfig();
     if (!active.valid) {
-        emit generationStarted(convId);
+        markStarted(convId);
         emitGenerationError(convId,
                             QString(),
                             QStringLiteral("No image provider is configured. Open "
@@ -401,7 +401,7 @@ void ImageService::refineImage(const QString& convId,
                                const QString& sourceImagePath,
                                const QString& prompt) {
     if (!m_providerRegistry) {
-        emit generationStarted(convId);
+        markStarted(convId);
         emitGenerationError(convId,
                             QString(),
                             QStringLiteral("Image refinement is unavailable in "
@@ -411,7 +411,7 @@ void ImageService::refineImage(const QString& convId,
     }
     const ActiveImageConfig active = m_providerRegistry->activeConfig();
     if (!active.valid) {
-        emit generationStarted(convId);
+        markStarted(convId);
         emitGenerationError(convId,
                             QString(),
                             QStringLiteral("No image provider is configured. Open "
@@ -424,7 +424,7 @@ void ImageService::refineImage(const QString& convId,
     // only the chat-image shape carries image input. Other shapes
     // (DALL-E images, A1111, local CLI) can't refine in this flow.
     if (active.endpointShape != QStringLiteral("openai_chat_image")) {
-        emit generationStarted(convId);
+        markStarted(convId);
         emitGenerationError(convId,
                             QString(),
                             QStringLiteral("Refine works only with a chat-image "
@@ -435,7 +435,7 @@ void ImageService::refineImage(const QString& convId,
         return;
     }
     if (sourceImagePath.isEmpty()) {
-        emit generationStarted(convId);
+        markStarted(convId);
         emitGenerationError(convId,
                             QString(),
                             QStringLiteral("Refine needs a source image."),
@@ -553,6 +553,26 @@ void ImageService::analyzeImage(const QString& convId,
  * @param convId Conversation UUID.
  * @return List of absolute paths.
  */
+int ImageService::pendingGenerations(const QString& convId) const {
+    return m_pendingByConv.value(convId, 0);
+}
+
+void ImageService::markStarted(const QString& convId) {
+    const int count = ++m_pendingByConv[convId];
+    emit generationStarted(convId);
+    emit pendingGenerationsChanged(convId, count);
+}
+
+void ImageService::markFinished(const QString& convId) {
+    auto it = m_pendingByConv.find(convId);
+    if (it == m_pendingByConv.end())
+        return;
+    const int count = --it.value();
+    if (count <= 0)
+        m_pendingByConv.erase(it);
+    emit pendingGenerationsChanged(convId, qMax(count, 0));
+}
+
 QStringList ImageService::conversationImages(const QString& convId) const {
     return m_conversationImages.value(convId);
 }
@@ -709,6 +729,7 @@ void ImageService::onImageReady(const JobContext& ctx, const QString& localPath)
         }
     }
 
+    markFinished(convId);
     emit imageGenerated(convId, localPath);
 
     // Agent-requested generations get a FOLLOW-UP: the chat layer
@@ -797,5 +818,6 @@ void ImageService::emitGenerationError(const QString& convId,
         }
     }
 
+    markFinished(convId);
     emit error(convId, message);
 }

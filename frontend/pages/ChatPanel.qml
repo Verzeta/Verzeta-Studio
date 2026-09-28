@@ -18,6 +18,24 @@ Rectangle {
     property bool canvasActive: false
     property bool canvasButtonHidden: false
 
+    property int pendingImages: 0
+    property int imagePercent: 0
+
+    function refreshPendingImages() {
+        pendingImages = ImageService.pendingGenerations(ChatController.activeConversationId);
+        if (pendingImages === 0)
+            imagePercent = 0;
+    }
+
+    Component.onCompleted: refreshPendingImages()
+
+    Connections {
+        target: ChatController
+        function onActiveConversationChanged() {
+            chatPanel.refreshPendingImages();
+        }
+    }
+
     signal menuClicked
     signal toggleSettings
     signal toggleCanvas
@@ -359,6 +377,12 @@ Rectangle {
                     active: ChatController.isGenerating
                     Layout.alignment: Qt.AlignVCenter
                 }
+
+                ToolActivityIndicator {
+                    active: chatPanel.pendingImages > 0
+                    label: chatPanel.imagePercent > 0 ? qsTr("Generating image %1%").arg(chatPanel.imagePercent) : qsTr("Generating image")
+                    Layout.alignment: Qt.AlignVCenter
+                }
             }
         }
     }
@@ -418,6 +442,17 @@ Rectangle {
 
     Connections {
         target: ImageService
+        function onPendingGenerationsChanged(convId, count) {
+            if (convId !== ChatController.activeConversationId)
+                return;
+            chatPanel.pendingImages = count;
+            if (count === 0)
+                chatPanel.imagePercent = 0;
+        }
+        function onGenerationProgress(convId, percent) {
+            if (convId === ChatController.activeConversationId)
+                chatPanel.imagePercent = percent;
+        }
         function onImageGenerated(convId, path) {
             if (convId === ChatController.activeConversationId)
                 applicationWindow().showPassiveNotification(qsTr("Image generated"), 3000);

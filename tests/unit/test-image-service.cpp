@@ -215,6 +215,52 @@ class TestImageService : public QObject {
         QCOMPARE(started.count(), 1);
         QCOMPARE(err.count(), 1);
     }
+
+    void test_pending_unknownConversationIsZero() {
+        QCOMPARE(m_imageService->pendingGenerations(QStringLiteral("nope")), 0);
+    }
+
+    void test_pending_syncErrorReturnsToZero() {
+        QSignalSpy spy(m_imageService, &ImageService::pendingGenerationsChanged);
+        ImageGenConfig cfg;
+        m_imageService->generateImage(QStringLiteral("conv-p1"), QStringLiteral("x"), cfg);
+        QCOMPARE(spy.count(), 2);
+        QCOMPARE(spy.at(0).at(0).toString(), QStringLiteral("conv-p1"));
+        QCOMPARE(spy.at(0).at(1).toInt(), 1);
+        QCOMPARE(spy.at(1).at(1).toInt(), 0);
+        QCOMPARE(m_imageService->pendingGenerations(QStringLiteral("conv-p1")), 0);
+    }
+
+    void test_pending_asyncJobCountsUntilFinished() {
+        ImageGenConfig cfg;
+        cfg.endpointShape = QStringLiteral("openai_images");
+        cfg.baseUrl = QStringLiteral("http://127.0.0.1:1");
+        cfg.apiKey = QStringLiteral("test-key");
+        cfg.model = QStringLiteral("test-model");
+        m_imageService->generateImage(QStringLiteral("conv-p2"), QStringLiteral("x"), cfg);
+        QCOMPARE(m_imageService->pendingGenerations(QStringLiteral("conv-p2")), 1);
+        QTRY_COMPARE_WITH_TIMEOUT(
+            m_imageService->pendingGenerations(QStringLiteral("conv-p2")), 0, 15000);
+    }
+
+    void test_pending_isPerConversation() {
+        ImageGenConfig cfg;
+        cfg.endpointShape = QStringLiteral("openai_images");
+        cfg.baseUrl = QStringLiteral("http://127.0.0.1:1");
+        cfg.apiKey = QStringLiteral("test-key");
+        m_imageService->generateImage(QStringLiteral("conv-p3"), QStringLiteral("x"), cfg);
+        QCOMPARE(m_imageService->pendingGenerations(QStringLiteral("conv-p3")), 1);
+        QCOMPARE(m_imageService->pendingGenerations(QStringLiteral("conv-p4")), 0);
+        QTRY_COMPARE_WITH_TIMEOUT(
+            m_imageService->pendingGenerations(QStringLiteral("conv-p3")), 0, 15000);
+    }
+
+    void test_pending_analysisErrorLeavesCountAlone() {
+        QSignalSpy spy(m_imageService, &ImageService::pendingGenerationsChanged);
+        m_imageService->analyzeImage(
+            QStringLiteral("conv-p5"), QStringLiteral("/nonexistent/x.png"), QStringLiteral("?"));
+        QCOMPARE(spy.count(), 0);
+    }
 };
 
 QTEST_MAIN(TestImageService)
